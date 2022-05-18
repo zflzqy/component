@@ -1,0 +1,7 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  cn.zflzqy.shiroclient.config.ShiroConfig,\
+  cn.zflzqy.shiroclient.config.ShiroServletContainerConfiguration
+
+
+
+

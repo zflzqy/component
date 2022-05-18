@@ -1,0 +1,96 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>cn.zflzqy</groupId>
+    <artifactId>component</artifactId>
+    <version>1.0.0</version>
+    <name>component</name>
+    <packaging>pom</packaging>
+    <modules>
+        <module>webSocket</module>
+    </modules>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring.boot.version>2.6.3</spring.boot.version>
+        <pac4j.cas.version>3.8.3</pac4j.cas.version>
+        <buji.pac4j.version>4.1.1</buji.pac4j.version>
+        <shiro.spring.version>1.4.0</shiro.spring.version>
+        <shiro.redis.version>3.1.0</shiro.redis.version>
+        <spring.web.version>5.3.16</spring.web.version>
+        <spring.webmvc.version>5.0.8.RELEASE</spring.webmvc.version>
+        <hutool.version>5.7.22</hutool.version>
+        <servlet.api.version>3.1.0</servlet.api.version>
+
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-configuration-processor</artifactId>
+                <optional>true</optional>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-redis</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.webmvc.version}</version>
+            </dependency>
+            <!-- websocket            -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-websocket</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
+
+            <!--cas认证 -->
+            <dependency>
+                <groupId>org.pac4j</groupId>
+                <artifactId>pac4j-cas</artifactId>
+                <version>${pac4j.cas.version}</version>
+            </dependency>
+            <!-- pac4j与shiro集成-->
+            <dependency>
+                <groupId>io.buji</groupId>
+                <artifactId>buji-pac4j</artifactId>
+                <version>${buji.pac4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.shiro</groupId>
+                <artifactId>shiro-spring</artifactId>
+                <version>${shiro.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.crazycake</groupId>
+                <artifactId>shiro-redis</artifactId>
+                <version>${shiro.redis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${servlet.api.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
