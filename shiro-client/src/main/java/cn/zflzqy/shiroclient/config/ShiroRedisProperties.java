@@ -27,14 +27,17 @@ public class ShiroRedisProperties {
     private List<String> anonUrl =  Arrays.asList("/", "/**");;
     /** 需要拦截地址*/
     private List<String> permitUrl;
+    /** 模式*/
+    private String mode = "TOKEN";
 
     /** 登录地址*/
     public String getLoginUrl() {
+//         return StrUtil.addSuffixIfNot(this.getCasUrl(),"/")+"/oauth2.0/authorize?response_type=code&client_id=clientId&redirect_uri="+callbackUrl+"&bypass_approval_prompt=true";
         return StrUtil.addSuffixIfNot(this.getCallbackUrl(),"/")+"login/cas?client_name=CasClient";
     }
     /** 登出地址*/
     public String getLogoutUrl() {
-        return StrUtil.removeSuffix(this.casUrl,"/")+"/logout?service="+StrUtil.removeSuffix(this.callbackUrl,"/")+ CALLBACK_LOGIN_PATH;
+        return StrUtil.removeSuffix(this.casUrl,"/")+"/logout?service="+StrUtil.removeSuffix(this.callbackUrl,"/");
     }
     /** cas地址*/
     public String getCallbackLoginUrl() {
@@ -71,5 +74,13 @@ public class ShiroRedisProperties {
 
     public void setPermitUrl(List<String> permitUrl) {
         this.permitUrl = permitUrl;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 }

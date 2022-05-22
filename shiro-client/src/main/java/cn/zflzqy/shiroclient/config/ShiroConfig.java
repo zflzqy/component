@@ -137,7 +137,7 @@ public class ShiroConfig {
         // 配置cas信息
         CasConfiguration configuration = new CasConfiguration();
         //CAS server登录地址
-        configuration.setLoginUrl(StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+ "login");
+        configuration.setLoginUrl(StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+ "oauth2.0/authorize?response_type=code&client_id=clientId&redirect_uri=https://test.zflzqy.cn:8080/login/cas");
         //CAS 版本，默认为 CAS30，我们使用的是 CAS20
         configuration.setProtocol(CasProtocol.CAS30);
         configuration.setAcceptAnyProxy(true);
