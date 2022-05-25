@@ -95,6 +95,7 @@ public class ShiroConfig {
         CallbackFilter callbackFilter = new CallbackFilter();
         callbackFilter.setConfig(config);
         callbackFilter.setStringRedisTemplate(stringRedisTemplate);
+        callbackFilter.setShiroRedisProperties(shiroRedisProperties);
         callbackFilter.setDefaultUrl(shiroRedisProperties.getCallbackUrl());
         filters.put("callbackFilter", callbackFilter);
         // 登出拦截器，cas会登出后访问所有登录过的系统的这个地址
@@ -106,7 +107,7 @@ public class ShiroConfig {
         logoutFilter.setDefaultUrl(shiroRedisProperties.getLoginUrl());
         filters.put("logoutFilter", logoutFilter);
         //cas 资源认证拦截器
-        SecurityFilter securityFilter = new SecurityFilter(stringRedisTemplate);
+        SecurityFilter securityFilter = new SecurityFilter(stringRedisTemplate,shiroRedisProperties);
         securityFilter.setConfig(config);
         securityFilter.setClients("CasClient");
         filters.put("securityFilter", securityFilter);
@@ -137,7 +138,13 @@ public class ShiroConfig {
         // 配置cas信息
         CasConfiguration configuration = new CasConfiguration();
         //CAS server登录地址
-        configuration.setLoginUrl(StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+ "oauth2.0/authorize?response_type=code&client_id=clientId&redirect_uri=https://test.zflzqy.cn:8080/login/cas");
+        if (StrUtil.equals(shiroRedisProperties.getMode(),ShiroRedisProperties.TOKEN)){
+            configuration.setLoginUrl(StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+ "oauth2.0/authorize?response_type=code&client_id="+shiroRedisProperties.getClientId()+
+                    "&redirect_uri="+StrUtil.addSuffixIfNot(shiroRedisProperties.getCallbackUrl(),"/")+"login/cas");
+        }else {
+            configuration.setLoginUrl(StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+ "login");
+        }
+
         //CAS 版本，默认为 CAS30，我们使用的是 CAS20
         configuration.setProtocol(CasProtocol.CAS30);
         configuration.setAcceptAnyProxy(true);
