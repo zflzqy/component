@@ -13,6 +13,13 @@ import javax.servlet.ServletResponse;
 import java.io.IOException;
 
 
+/***
+* @description:登出服务器
+* @author: zfl
+* @return:
+* @param:  * @param null
+* @time: 2022/5/22 9:47
+ */
 public class LogoutFilter extends io.buji.pac4j.filter.LogoutFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogoutFilter.class);
     private StringRedisTemplate stringRedisTemplate;

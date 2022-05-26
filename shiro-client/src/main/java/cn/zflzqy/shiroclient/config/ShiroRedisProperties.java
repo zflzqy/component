@@ -12,7 +12,7 @@ import java.util.List;
  * @description：
  * @date ：2022/3/17 19:35
  */
-@ConfigurationProperties(prefix = "zfl.zqy.shiro.redis")
+@ConfigurationProperties(prefix = "zfl.zqy.shiro.client")
 @Component
 public class ShiroRedisProperties {
     /** 默认登录地址后缀*/
@@ -27,6 +27,13 @@ public class ShiroRedisProperties {
     private List<String> anonUrl =  Arrays.asList("/", "/**");;
     /** 需要拦截地址*/
     private List<String> permitUrl;
+    /** token的客户端id*/
+    private String  clientId;
+    /** token的客户端clientSecret*/
+    private String  clientSecret;
+    /** 模式*/
+    private String mode = "SESSION";
+    public static final String TOKEN ="TOKEN";
 
     /** 登录地址*/
     public String getLoginUrl() {
@@ -34,7 +41,7 @@ public class ShiroRedisProperties {
     }
     /** 登出地址*/
     public String getLogoutUrl() {
-        return StrUtil.removeSuffix(this.casUrl,"/")+"/logout?service="+StrUtil.removeSuffix(this.callbackUrl,"/")+ CALLBACK_LOGIN_PATH;
+        return StrUtil.removeSuffix(this.casUrl,"/")+"/logout?service="+StrUtil.removeSuffix(this.callbackUrl,"/")+CALLBACK_LOGIN_PATH;
     }
     /** cas地址*/
     public String getCallbackLoginUrl() {
@@ -71,5 +78,29 @@ public class ShiroRedisProperties {
 
     public void setPermitUrl(List<String> permitUrl) {
         this.permitUrl = permitUrl;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
     }
 }

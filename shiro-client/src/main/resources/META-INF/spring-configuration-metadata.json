@@ -2,25 +2,25 @@
 
   "properties": [
     {
-      "name": "zfl.zqy.shiro.redis.permit-url",
+      "name": "zfl.zqy.shiro.client.permit-url",
       "type": "java.lang.String",
       "description": "需要登录的地址",
       "sourceType": "cn.zflzqy.shiroclient.config.ShiroRedisProperties"
     },
     {
-      "name": "zfl.zqy.shiro.redis.anon-url",
+      "name": "zfl.zqy.shiro.client.anon-url",
       "type": "java.lang.String",
       "description": "不需要登录的地址，如果与需要登录地址冲突以需要登录的地址配置为准",
       "sourceType": "cn.zflzqy.shiroclient.config.ShiroRedisProperties"
     },
     {
-      "name": "zfl.zqy.shiro.redis.callback-url",
+      "name": "zfl.zqy.shiro.client.callback-url",
       "type": "java.lang.String",
       "description": "cas回调地址，通常为当前项目的地址",
       "sourceType": "cn.zflzqy.shiroclient.config.ShiroRedisProperties"
     },
     {
-      "name": "zfl.zqy.shiro.redis.cas-url",
+      "name": "zfl.zqy.shiro.client.cas-url",
       "type": "java.lang.String",
       "description": "cas的地址",
       "sourceType": "cn.zflzqy.shiroclient.config.ShiroRedisProperties"
