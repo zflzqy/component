@@ -21,7 +21,7 @@
         <pac4j.cas.version>3.8.3</pac4j.cas.version>
         <buji.pac4j.version>4.1.1</buji.pac4j.version>
         <shiro.spring.version>1.4.0</shiro.spring.version>
-        <shiro.redis.version>3.1.0</shiro.redis.version>
+        <shiro.redis.version>3.3.0</shiro.redis.version>
         <spring.web.version>5.3.16</spring.web.version>
         <spring.webmvc.version>5.0.8.RELEASE</spring.webmvc.version>
         <hutool.version>5.7.22</hutool.version>

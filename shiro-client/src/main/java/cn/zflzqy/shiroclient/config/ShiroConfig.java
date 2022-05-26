@@ -194,8 +194,7 @@ public class ShiroConfig {
     @Bean
     public RedisManager redisManager() {
         RedisManager redisManager = new RedisManager();
-        redisManager.setHost(host);
-        redisManager.setPort(port);
+        redisManager.setHost(host+":"+port);
         redisManager.setTimeout(timeout);
         redisManager.setDatabase(database);
         redisManager.setPassword(password);
@@ -243,9 +242,10 @@ public class ShiroConfig {
      */
     @Bean
     public SessionManager sessionManager(RedisSessionDAO redisSessionDAO) {
-        ShiroSessionManager shiroSessionManager = new ShiroSessionManager();
-        shiroSessionManager.setSessionDAO(redisSessionDAO);
-        return shiroSessionManager;
+        ShiroSessionManager sessionManager = new ShiroSessionManager();
+        // 设置sessionDAO
+        sessionManager.setSessionDAO(redisSessionDAO);
+        return sessionManager;
     }
     @Bean
     public AuthorizationController authorizationController(){
