@@ -47,12 +47,17 @@ public class SecurityFilter extends io.buji.pac4j.filter.SecurityFilter {
             if (stringRedisTemplate != null) {
                 // 刷新会话缓存信息
                 String session = SecurityUtils.getSubject().getSession().getId().toString();
-                // 获取st
-                String st = stringRedisTemplate.opsForValue().get(CallbackFilter.SESSION_ST_KEY + session);
-                // 刷新缓存过期时间
-                stringRedisTemplate.expire(CallbackFilter.SESSION_ST_KEY + session, ShiroConfig.EXPIRE, TimeUnit.SECONDS);
-                stringRedisTemplate.expire(CallbackFilter.ST_KEY + st, ShiroConfig.EXPIRE, TimeUnit.SECONDS);
-
+                if (StrUtil.isNotBlank(session)) {
+                    // 获取st
+                    String st = stringRedisTemplate.opsForValue().get(CallbackFilter.SESSION_ST_KEY + session);
+                    if (StrUtil.isNotBlank(st)) {
+                        // 刷新缓存过期时间
+                        stringRedisTemplate.expire(CallbackFilter.SESSION_ST_KEY + session, ShiroConfig.EXPIRE, TimeUnit.SECONDS);
+                        stringRedisTemplate.expire(CallbackFilter.ST_KEY + st, ShiroConfig.EXPIRE, TimeUnit.SECONDS);
+                    }else {
+                        stringRedisTemplate.delete(ShiroConfig.SESSION_KEY+session);
+                    }
+                }
             }
         }else {
             // 地址匹配
