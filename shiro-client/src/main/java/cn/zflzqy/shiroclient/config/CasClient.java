@@ -37,8 +37,8 @@ public class CasClient extends org.pac4j.cas.client.CasClient {
             if (CommonHelper.isNotBlank(attemptedAuth)) {
                 this.cleanAttemptedAuthentication(context);
                 this.cleanRequestedUrl(context);
-                //这里按自己需求处理，默认是返回了401，我在这边改为跳转到cas登录页面
-                //throw HttpAction.unauthorized(context);
+                // 这里按自己需求处理，默认是返回了401，我在这边改为跳转到cas登录页面
+                // throw HttpAction.unauthorized(context);
                 return this.getRedirectActionBuilder().redirect(context);
             } else {
                 return this.getRedirectActionBuilder().redirect(context);
