@@ -9,11 +9,12 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <artifactId>shiro-client</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.12</version>
     <name>shiro-client</name>
     <description>shiro-client</description>
     <properties>
         <java.version>11</java.version>
+        <github.global.server>github</github.global.server>
     </properties>
     <dependencies>
         <dependency>
@@ -56,5 +57,12 @@
         </dependency>
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub fightinggg Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/zflzqy/maven-repo</url>
+        </repository>
+    </distributionManagement>
 
 </project>

@@ -1,6 +1,8 @@
 package cn.zflzqy.shiroclient.filter;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.zflzqy.shiroclient.config.ShiroConfig;
@@ -21,6 +23,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -32,11 +35,32 @@ import java.util.concurrent.TimeUnit;
 public class SecurityFilter extends io.buji.pac4j.filter.SecurityFilter {
     private StringRedisTemplate stringRedisTemplate;
     private ShiroRedisProperties shiroRedisProperties;
+    /** token模式重定向地址*/
+    private static String tokenRedirectUrl;
 
     public SecurityFilter(StringRedisTemplate stringRedisTemplate,ShiroRedisProperties shiroRedisProperties) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.shiroRedisProperties = shiroRedisProperties;
+        this.buildTokenUlr();
     }
+
+    public SecurityFilter(){
+        this.buildTokenUlr();
+    }
+
+    /**
+     * 构建token模式下的重定向url
+     */
+    public void buildTokenUlr(){
+        Map<String,String> param = MapUtil.newHashMap(5);
+        if (shiroRedisProperties!=null&&ShiroRedisProperties.TOKEN.equals(shiroRedisProperties.getMode())) {
+            param.put("response_type","code");
+            param.put("client_id",shiroRedisProperties.getClientId());
+            param.put("redirect_uri",StrUtil.removeSuffix(shiroRedisProperties.getCallbackUrl(),"/")+ShiroRedisProperties.CALLBACK_LOGIN_PATH);
+            tokenRedirectUrl = StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+"oauth2.0/authorize?"+ HttpUtil.toParams(param);
+        }
+    }
+
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
@@ -64,18 +88,22 @@ public class SecurityFilter extends io.buji.pac4j.filter.SecurityFilter {
             HttpServletRequest request = (HttpServletRequest)servletRequest;
             String token = request.getHeader(ShiroSessionManager.AUTHORIZATION);
             HttpServletResponse response = (HttpServletResponse) servletResponse;
+            // 获取用户信息
             String userStr = stringRedisTemplate.opsForValue().get(CallbackFilter.TOKEN+token);
-            String redirectUrl =StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+ "oauth2.0/authorize?response_type=code&client_id="+shiroRedisProperties.getClientId()+
-                    "&redirect_uri="+StrUtil.addSuffixIfNot(shiroRedisProperties.getCallbackUrl(),"/")+"login/cas";
             if (StrUtil.isBlank(userStr)){
-                response.sendRedirect(redirectUrl);
+                response.sendRedirect(tokenRedirectUrl);
                 return;
             }
+
+            // 解析用户
             JSONObject userInfo = JSONUtil.parseObj(userStr);
             if (userInfo.isEmpty()){
-                response.sendRedirect(redirectUrl);
+                response.sendRedirect(tokenRedirectUrl);
                 return;
             }
+            // token续期
+            stringRedisTemplate.expire(CallbackFilter.TOKEN+token,userInfo.getJSONObject("accessTokenInfo").getLong("expires_in"),TimeUnit.SECONDS);
+
             
         }
     }

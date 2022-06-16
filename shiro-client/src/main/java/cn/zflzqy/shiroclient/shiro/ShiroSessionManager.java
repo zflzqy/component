@@ -38,10 +38,10 @@ public class ShiroSessionManager extends DefaultWebSessionManager {
         if (StrUtil.equals(shiroRedisProperties.getMode(),ShiroRedisProperties.TOKEN)) {
             String authorization = WebUtils.toHttp(request).getHeader(AUTHORIZATION);
             if (StringUtils.isEmpty(authorization)) {
-                //如果没有携带id参数则按照父类的方式在cookie进行获取
+                // 如果没有携带id参数则按照父类的方式在cookie进行获取
                 return null;
             } else {
-                //如果请求头中有 authToken 则其值为sessionId
+                // 如果请求头中有 authToken 则其值为sessionId 可以尝试重写
                 request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID_SOURCE, REFERENCED_SESSION_ID_SOURCE);
                 request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID, authorization);
                 request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID_IS_VALID, Boolean.TRUE);

@@ -1,7 +1,10 @@
 package cn.zflzqy.shiroclient.filter;
 
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONObject;
@@ -19,6 +22,8 @@ import org.pac4j.core.engine.DefaultCallbackLogic;
 import org.pac4j.core.http.adapter.HttpActionAdapter;
 import org.pac4j.core.http.adapter.J2ENopHttpActionAdapter;
 import org.pac4j.core.util.CommonHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -29,6 +34,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -38,7 +44,9 @@ import java.util.concurrent.TimeUnit;
  * @param: * @param null
  * @time: 2022/5/22 9:47
  */
+
 public class CallbackFilter extends io.buji.pac4j.filter.CallbackFilter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CallbackFilter.class);
     private StringRedisTemplate stringRedisTemplate;
     private ShiroRedisProperties shiroRedisProperties;
     /**
@@ -54,16 +62,42 @@ public class CallbackFilter extends io.buji.pac4j.filter.CallbackFilter {
      */
     public static final String TOKEN = "TOKEN::";
 
+    private static Map<String,String> getAccessTokenParam;
+
+    public CallbackFilter(StringRedisTemplate stringRedisTemplate, ShiroRedisProperties shiroRedisProperties) {
+        this.stringRedisTemplate = stringRedisTemplate;
+        this.shiroRedisProperties = shiroRedisProperties;
+        this.buildParam();
+    }
+
+    public CallbackFilter() {
+        buildParam();
+    }
+
+    private void buildParam() {
+        getAccessTokenParam = MapUtil.newHashMap(5);
+        getAccessTokenParam.put("grant_type","authorization_code");
+        if (shiroRedisProperties!=null) {
+            getAccessTokenParam.put("client_id", shiroRedisProperties.getClientId());
+            getAccessTokenParam.put("client_secret", shiroRedisProperties.getClientSecret());
+            getAccessTokenParam.put("redirect_uri", shiroRedisProperties.getCallbackUrl());
+        }
+    }
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         // 判断模式
         if (StrUtil.equals(shiroRedisProperties.getMode(), ShiroRedisProperties.TOKEN)) {
             String code = servletRequest.getParameter("code");
-            String url = StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl(), "/") +
-                    "oauth2.0/accessToken?grant_type=authorization_code&client_id=" + shiroRedisProperties.getClientId() + "&client_secret=" + shiroRedisProperties.getClientSecret() +
-                    "&code=" + code + "&redirect_uri=" + shiroRedisProperties.getCallbackUrl();
+            // 构建获取accessToken地址
+            String url = getUrl(code);
             // 获取accessToken
             HttpResponse casResponse = HttpUtil.createGet(url).execute();
+            if (casResponse.getStatus()!= HttpStatus.HTTP_OK){
+                HttpServletResponse response = (HttpServletResponse) servletResponse;
+                response.getWriter().write("获取accessToken失败");
+                return;
+            }
             String body = casResponse.body();
             JSONObject accessTokenInfo = JSONUtil.parseObj(body);
             String accessToken = accessTokenInfo.getStr("access_token");
@@ -72,12 +106,16 @@ public class CallbackFilter extends io.buji.pac4j.filter.CallbackFilter {
                 casResponse = HttpUtil.createGet(StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl(), "/") + "oauth2.0/profile?access_token=" + accessTokenInfo.getStr("access_token"))
                         .execute();
                 body = casResponse.body();
+                LOGGER.info("获取的用户信息：{}",body.toString());
                 JSONObject userInfo = JSONUtil.parseObj(body);
                 // 添加accessTokenInfo信息
                 userInfo.putOnce("accessTokenInfo", accessTokenInfo);
-                // 存储到redis中
+                LOGGER.info("获取的用户信息：{}",userInfo.toString());
+                // 生成token并存储用户信息到redis中
                 String token = JWTUtil.createToken(userInfo,shiroRedisProperties.getClientSecret().getBytes());
+                LOGGER.info("获取的token：{}",token);
                 stringRedisTemplate.opsForValue().set(TOKEN + token, userInfo.toString(), ShiroConfig.EXPIRE, TimeUnit.SECONDS);
+                // 输出到响应体中
                 HttpServletResponse response = (HttpServletResponse) servletResponse;
                 response.getWriter().write(token);
                 response.flushBuffer();
@@ -96,15 +134,29 @@ public class CallbackFilter extends io.buji.pac4j.filter.CallbackFilter {
         }
     }
 
+    /**
+     * 构建获取accessToken 的url
+     * @param code
+     * @return
+     */
+    private String getUrl(String code) {
+        Map<String, String> param = ObjectUtil.clone(getAccessTokenParam);
+        param.put("code",code);
+
+        return  StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl(), "/") +"oauth2.0/accessToken?"+HttpUtil.toParams(param);
+    }
+
     public StringRedisTemplate getStringRedisTemplate() {
         return stringRedisTemplate;
     }
 
     public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
+        this.buildParam();
     }
 
     public void setShiroRedisProperties(ShiroRedisProperties shiroRedisProperties) {
         this.shiroRedisProperties = shiroRedisProperties;
+        this.buildParam();
     }
 }

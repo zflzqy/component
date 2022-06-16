@@ -145,13 +145,13 @@ public class ShiroConfig {
             configuration.setLoginUrl(StrUtil.addSuffixIfNot(shiroRedisProperties.getCasUrl() ,"/")+ "login");
         }
 
-        //CAS 版本，默认为 CAS30，我们使用的是 CAS20
+        // CAS 版本，默认为 CAS30
         configuration.setProtocol(CasProtocol.CAS30);
         configuration.setAcceptAnyProxy(true);
         configuration.setPrefixUrl(shiroRedisProperties.getCasUrl());
         // 设置cas信息
         CasClient casClient = new CasClient(configuration);
-        //客户端回调地址
+        // 客户端回调地址
         casClient.setCallbackUrl(shiroRedisProperties.getLoginUrl());
         Config config = new Config(casClient);
         // 设置会话存储
@@ -247,6 +247,14 @@ public class ShiroConfig {
         sessionManager.setSessionDAO(redisSessionDAO);
         return sessionManager;
     }
+
+    /**
+    * @description: 无权限bean
+    * @author: zfl
+    * @return: cn.zflzqy.shiroclient.controller.AuthorizationController
+    * @param:  * @param
+    * @time: 2022/6/14 20:16
+     */
     @Bean
     public AuthorizationController authorizationController(){
         return  new AuthorizationController();
