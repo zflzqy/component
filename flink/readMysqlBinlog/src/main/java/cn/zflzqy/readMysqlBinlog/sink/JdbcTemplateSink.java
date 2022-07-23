@@ -1,6 +1,7 @@
 package cn.zflzqy.readMysqlBinlog.sink;
 
-import cn.zflzqy.readMysqlBinlog.DruidConnectionPool;
+import cn.zflzqy.readMysqlBinlog.db.DataBase;
+import cn.zflzqy.readMysqlBinlog.pool.DruidPool;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.slf4j.Logger;
@@ -17,10 +18,15 @@ import javax.sql.DataSource;
 public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcTemplateSink.class);
     private JdbcTemplate jdbcTemplate;
+    private DataBase dataBase;
+
+    public JdbcTemplateSink(DataBase dataBase) {
+        this.dataBase = dataBase;
+    }
 
     public void open(Configuration parameters) throws Exception {
         jdbcTemplate = new JdbcTemplate();
-        DataSource dataSource = DruidConnectionPool.getDataSource();
+        DataSource dataSource = DruidPool.getDataSource(dataBase);
         jdbcTemplate.setDataSource(dataSource);
         LOGGER.info("获取数据库连接池：{},构建jdbcTemplate:{}",dataSource.hashCode(),jdbcTemplate.hashCode());
 
