@@ -18,10 +18,15 @@
 
 package cn.zflzqy.readMysqlBinlog;
 
+import cn.zflzqy.readMysqlBinlog.sink.JdbcSink;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.util.Collector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Skeleton for a Flink Streaming Job.
@@ -35,11 +40,12 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  * <p>If you change the name of the main class (with the public static void main(String[] args))
  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
  */
-public class StreamingJob {
 
+public class StreamingJob {
+	private static final Logger LOGGER = LoggerFactory.getLogger(StreamingJob.class);
 	public static void main(String[] args) throws Exception {
 		MySqlSource<String> mySqlSource = MySqlSource.<String>builder()
-				.hostname("127.0.0.1")
+				.hostname("192.168.50.102")
 				.port(3306)
 				.databaseList("myapp") // set captured database
 				.tableList("myapp.resource") // set captured table
@@ -59,7 +65,30 @@ public class StreamingJob {
 				.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "MySQL Source")
 				// set 4 parallel source tasks
 				.setParallelism(1)
-				.print().setParallelism(1); // use parallelism 1 for sink to keep message ordering
+				.flatMap(new RichFlatMapFunction<String, Object>() {
+					@Override
+					public void flatMap(String s, Collector<Object> collector) throws Exception {
+						// 将得到数据，反射调用方法，传入jdbTemplate和数据源，可以同时提供事务级处理
+						LOGGER.info("得到的数据：{}",s);
+						collector.collect(s);
+					}
+				})
+				.addSink(new JdbcSink<>())
+				.setParallelism(1); // use parallelism 1 for sink to keep message ordering
+		env
+				.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "MySQL Source")
+				// set 4 parallel source tasks
+				.setParallelism(1)
+				.flatMap(new RichFlatMapFunction<String, Object>() {
+					@Override
+					public void flatMap(String s, Collector<Object> collector) throws Exception {
+						// 将得到数据，反射调用方法，传入jdbTemplate和数据源，可以同时提供事务级处理
+						LOGGER.info("得到的数据1：{}",s);
+						collector.collect(s);
+					}
+				})
+				.addSink(new JdbcSink<>())
+				.setParallelism(1); // use parallelism 1 for sink to keep message ordering
 
 		env.execute("Print MySQL Snapshot + Binlog");
 	}
