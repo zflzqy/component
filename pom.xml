@@ -14,6 +14,9 @@
     <packaging>pom</packaging>
     <modules>
         <module>webSocket</module>
+        <module>shiro-client</module>
+        <module>async</module>
+        <module>flink/readMysqlBinlog</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,6 +29,7 @@
         <spring.webmvc.version>5.0.8.RELEASE</spring.webmvc.version>
         <hutool.version>5.7.22</hutool.version>
         <servlet.api.version>3.1.0</servlet.api.version>
+        <disruptor.version>3.4.4</disruptor.version>
 
     </properties>
 
@@ -90,6 +94,12 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${servlet.api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>${disruptor.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
