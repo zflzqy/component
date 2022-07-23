@@ -18,7 +18,7 @@
 
 package cn.zflzqy.readMysqlBinlog;
 
-import cn.zflzqy.readMysqlBinlog.sink.JdbcSink;
+import cn.zflzqy.readMysqlBinlog.sink.JdbcTemplateSink;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
@@ -73,7 +73,7 @@ public class StreamingJob {
 						collector.collect(s);
 					}
 				})
-				.addSink(new JdbcSink<>())
+				.addSink(new JdbcTemplateSink<>())
 				.setParallelism(1); // use parallelism 1 for sink to keep message ordering
 		env
 				.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "MySQL Source")
@@ -87,7 +87,7 @@ public class StreamingJob {
 						collector.collect(s);
 					}
 				})
-				.addSink(new JdbcSink<>())
+				.addSink(new JdbcTemplateSink<>())
 				.setParallelism(1); // use parallelism 1 for sink to keep message ordering
 
 		env.execute("Print MySQL Snapshot + Binlog");

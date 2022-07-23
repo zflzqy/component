@@ -27,7 +27,7 @@ public class DruidConnectionPool {
     }
 
 
-    public static DataSource getConnection() throws SQLException {
+    public static DataSource getDataSource() throws SQLException {
         return dataSource;
     }
 }

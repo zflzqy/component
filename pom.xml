@@ -16,7 +16,6 @@
         <module>webSocket</module>
         <module>shiro-client</module>
         <module>async</module>
-        <module>flink/readMysqlBinlog</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
