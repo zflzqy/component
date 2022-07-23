@@ -2,6 +2,7 @@ package cn.zflzqy.readMysqlBinlog.pool;
 
 import cn.zflzqy.readMysqlBinlog.db.DataBase;
 import com.alibaba.druid.pool.DruidDataSource;
+import org.apache.flink.table.expressions.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,12 +11,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DruidPool {
     private static final Logger LOGGER = LoggerFactory.getLogger(DruidPool.class);
-    private static ConcurrentHashMap<String, DataSource> dataSources = new ConcurrentHashMap<>(6);
+    private static ConcurrentHashMap<Integer, DataSource> dataSources = new ConcurrentHashMap<>(6);
     private static boolean ex;
 
     // 静态代码块
     public synchronized static void create(DataBase dataBase) {
-        if (null != dataSources.get(dataBase.getClass().getName())) {
+        if (null != dataSources.get(dataBase.hashCode())) {
             return;
         }
         LOGGER.info("初始化前连接池大小：{}", dataSources.size());
@@ -46,7 +47,7 @@ public class DruidPool {
         druidDataSource.setAsyncInit(true);
         try {
             LOGGER.info(dataBase.getClass().getName());
-            dataSources.put(dataBase.getClass().getName(), druidDataSource);
+            dataSources.put(dataBase.hashCode(), druidDataSource);
             LOGGER.info("连接池初始化成功:{},连接池大小：{}", druidDataSource.hashCode(), dataSources.size());
         } catch (Exception e) {
             LOGGER.info("初始化连接池异常：{}", e.getMessage());
@@ -57,7 +58,7 @@ public class DruidPool {
     }
 
     public static DataSource getDataSource(DataBase dataBase) throws InterruptedException {
-        DataSource dataSource = dataSources.get(dataBase.getClass().getName());
+        DataSource dataSource = dataSources.get(dataBase.hashCode());
         if (null == dataSource) {
             create(dataBase);
         }

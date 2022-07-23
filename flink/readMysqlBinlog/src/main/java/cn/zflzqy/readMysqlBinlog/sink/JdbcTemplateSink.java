@@ -25,11 +25,10 @@ public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
     }
 
     public void open(Configuration parameters) throws Exception {
-        jdbcTemplate = new JdbcTemplate();
-        DataSource dataSource = DruidPool.getDataSource(dataBase);
-        jdbcTemplate.setDataSource(dataSource);
-        LOGGER.info("获取数据库连接池：{},构建jdbcTemplate:{}",dataSource.hashCode(),jdbcTemplate.hashCode());
-
+//        jdbcTemplate = new JdbcTemplate();
+//        DataSource dataSource = DruidPool.getDataSource(dataBase);
+//        jdbcTemplate.setDataSource(dataSource);
+//        LOGGER.info("获取数据库连接池：{},构建jdbcTemplate:{}",dataSource.hashCode(),jdbcTemplate.hashCode());
         super.open(parameters);
     }
     @Override
