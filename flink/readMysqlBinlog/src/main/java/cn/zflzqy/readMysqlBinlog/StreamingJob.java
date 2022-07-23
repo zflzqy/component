@@ -18,6 +18,8 @@
 
 package cn.zflzqy.readMysqlBinlog;
 
+import cn.zflzqy.readMysqlBinlog.db.MyAppDataBase;
+import cn.zflzqy.readMysqlBinlog.pool.DruidPool;
 import cn.zflzqy.readMysqlBinlog.sink.JdbcTemplateSink;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
@@ -60,6 +62,13 @@ public class StreamingJob {
 
 		// enable checkpoint
 		env.enableCheckpointing(3000);
+		// 构建数据库连接信息
+		MyAppDataBase myAppDataBase = new MyAppDataBase();
+		myAppDataBase.setIp("192.168.50.102");
+		myAppDataBase.setPort(3306);
+		myAppDataBase.setUsername("root");
+		myAppDataBase.setPassword("123456");
+		myAppDataBase.setDatabaseName("myapp");
 
 		env
 				.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "MySQL Source")
@@ -73,7 +82,7 @@ public class StreamingJob {
 						collector.collect(s);
 					}
 				})
-				.addSink(new JdbcTemplateSink<>())
+				.addSink(new JdbcTemplateSink<>(myAppDataBase))
 				.setParallelism(1); // use parallelism 1 for sink to keep message ordering
 		env
 				.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(), "MySQL Source")
@@ -87,7 +96,7 @@ public class StreamingJob {
 						collector.collect(s);
 					}
 				})
-				.addSink(new JdbcTemplateSink<>())
+				.addSink(new JdbcTemplateSink<>(myAppDataBase))
 				.setParallelism(1); // use parallelism 1 for sink to keep message ordering
 
 		env.execute("Print MySQL Snapshot + Binlog");
