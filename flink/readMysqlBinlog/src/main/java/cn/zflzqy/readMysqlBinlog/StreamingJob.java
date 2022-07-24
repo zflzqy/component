@@ -19,6 +19,7 @@
 package cn.zflzqy.readMysqlBinlog;
 
 import cn.zflzqy.readMysqlBinlog.db.DataBase;
+import cn.zflzqy.readMysqlBinlog.parameter.ParameterFactory;
 import cn.zflzqy.readMysqlBinlog.sink.JdbcTemplateSink;
 import com.alibaba.fastjson2.JSONObject;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
@@ -37,24 +38,20 @@ import java.io.File;
 /**
  * Skeleton for a Flink Streaming Job.
  *
- * <p>For a tutorial how to write a Flink streaming application, check the
- * tutorials and examples on the <a href="https://flink.apache.org/docs/stable/">Flink Website</a>.
- *
- * <p>To package your application into a JAR file for execution, run
- * 'mvn clean package' on the command line.
- *
- * <p>If you change the name of the main class (with the public static void main(String[] args))
- * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
+ * <p>
+ * 从外部配置读取文件信息 同时可以提供多种方式读取外部配置信息，比如http,数据库，文件，以策略模式搞，同时可以考虑不同模式的合并
+ * 一个binglo表日志，写入到一个或多个库或表中，支持kafka和mysqlbinlog日志两种方式，以工厂模式构建
+ * 增加字段映射示例
  */
 
 public class StreamingJob {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StreamingJob.class);
 	public static void main(String[] args) throws Exception {
-		ParameterTool configPath = ParameterTool.fromArgs(args);
-//		JSONObject.parseObject(FileUtils.readFile(new File(configPath.get("configPath")),"utf-8"));
-		// 从外部配置读取文件信息 同时可以提供多种方式读取外部配置信息，比如http,数据库，文件，以策略模式搞，同时可以考虑不同模式的合并
-		// 一个binglo表日志，写入到一个或多个库或表中，支持kafka和mysqlbinlog日志两种方式，以工厂模式构建
-		// 增加字段映射示例
+		// 解析配置文件
+		ParameterFactory parameterFactory = new ParameterFactory(args);
+		// 获取解析数据
+		JSONObject result = parameterFactory.getResult();
+		// 订阅binglog/kafka,构建连接池，处理数据
 		MySqlSource<String> mySqlSource = MySqlSource.<String>builder()
 				.hostname("192.168.50.102")
 				.port(3306)
