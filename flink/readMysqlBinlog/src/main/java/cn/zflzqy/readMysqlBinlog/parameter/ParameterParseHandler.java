@@ -1,5 +1,6 @@
 package cn.zflzqy.readMysqlBinlog.parameter;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ public abstract class ParameterParseHandler {
     // 下个处理者
     private ParameterParseHandler next;
     //处理请求的方法
-    public abstract JSONObject handleRequest(ParameterTool parameterTool);
+    public abstract JSONArray handleRequest(ParameterTool parameterTool);
 
     public ParameterParseHandler getNext() {
         return next;

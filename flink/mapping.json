@@ -1,0 +1,31 @@
+[
+  {
+    "type": "mysql-binlog",
+    "ip":"192.168.50.102",
+    "port":3306,
+    "dataBaseName":"myapp",
+    "username": "root",
+    "password": "123456",
+    "tableName":"resource",
+    "tableMappings":[
+      {
+        "type": "mysql",
+        "ip":"127.0.0.1",
+        "port":3306,
+        "username": "root",
+        "password": "123456",
+        "dataBaseName":"resource_copy1",
+        "tables":[
+          {
+            "table":"targetTable",
+            "tableId":"id",
+            "columnMappings":{
+              "name":"name1",
+              "sex": "sex1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
