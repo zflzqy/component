@@ -100,6 +100,7 @@ public class StreamingJob {
 						public void flatMap(String s, Collector<Object> collector) throws Exception {
 							// 此次将类型处理为
 							LOGGER.info("将{}处理到{}.{},映射关系：{}",s,dataBaseName,tablesJSONObject.getString("table"),tablesJSONObject.getString("columnMappings"));
+							// 最终形成sql语句
 						}
 					});
 					DataStream<String> sideOutput = streamOperator.getSideOutput(outputTag);
