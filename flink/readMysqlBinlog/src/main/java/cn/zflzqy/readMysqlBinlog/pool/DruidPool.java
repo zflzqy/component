@@ -62,7 +62,7 @@ public class DruidPool {
         if (null == dataSource) {
             create(dataBase);
         }
-        return dataSources.get(dataBase.getClass().getName());
+        return dataSources.get(dataBase.hashCode());
     }
 }
 
