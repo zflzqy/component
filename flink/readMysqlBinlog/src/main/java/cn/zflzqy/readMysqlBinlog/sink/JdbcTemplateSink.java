@@ -33,8 +33,9 @@ public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
     }
     @Override
     public void invoke(IN value, Context context) throws Exception {
-        // 执行方法
-        LOGGER.info(value.toString());
+
         super.invoke(value, context);
+        // 执行方法根据类型来执行对应的方法
+        LOGGER.info(value.toString());
     }
 }

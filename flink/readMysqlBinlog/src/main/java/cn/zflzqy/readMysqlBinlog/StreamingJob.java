@@ -24,26 +24,22 @@ import cn.zflzqy.readMysqlBinlog.parameter.ParameterFactory;
 import cn.zflzqy.readMysqlBinlog.sink.JdbcTemplateSink;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.ververica.cdc.connectors.mysql.source.MySqlSource;
-import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
-import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.RichFlatMapFunction;
 import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
-import org.apache.flink.streaming.api.datastream.DataStreamUtils;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
-import org.apache.flink.util.FileUtils;
 import org.apache.flink.util.OutputTag;
+import org.apache.flink.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -65,6 +61,8 @@ public class StreamingJob {
 		// 订阅binglog/kafka,构建连接池，处理数据
 		// 启动监听库：库名：配置信息作为key
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		env.setParallelism(1);
+		env.enableCheckpointing(3000);
 		// 构建流与映射
 		List<Tuple2<DataStreamSource<String>, JSONArray>> dataStreamSource = DataStreamStrategy.getDataStreamSource(config, env);
 		// 构建数据库信息对象
@@ -72,31 +70,47 @@ public class StreamingJob {
 			DataStreamSource<String> dataStreamSource1 = dataStreamSourceJSONArrayTuple2._1;
 			for (int i =0;i<dataStreamSourceJSONArrayTuple2._2.size();i++){
 				OutputTag<String> outputTag = new OutputTag<String>("stream"+i, Types.STRING) {};
+				// todo 根据类型策略化输出模式
 				JSONObject jsonObject = dataStreamSourceJSONArrayTuple2._2.getJSONObject(i);
 				// 构建连接池
 				DataBase dataBase =new DataBase();
-				dataBase.setIp(jsonObject.getString("ip"));
-				dataBase.setPort(jsonObject.getInteger("port"));
-				dataBase.setDatabaseName(jsonObject.getString("dataBaseName"));
+				String ip = jsonObject.getString("ip");
+				int port = jsonObject.getInteger("port");
+				String dataBaseName = jsonObject.getString("dataBaseName");
+
+				dataBase.setIp(ip);
+				dataBase.setPort(port);
+				dataBase.setDatabaseName(dataBaseName);
 				dataBase.setUsername(jsonObject.getString("username"));
 				dataBase.setPassword(jsonObject.getString("password"));
-				// todo 修改流复制为多表，可以通过配置的字段映射先构建数据库环境，同时启用事务
-				// 流复制
-				SingleOutputStreamOperator streamOperator = dataStreamSource1.process(new ProcessFunction<String, Object>() {
-					@Override
-					public void processElement(String s, ProcessFunction<String, Object>.Context context, Collector<Object> collector) throws Exception {
-						collector.collect(s);
-						context.output(outputTag,s);
-					}
-				});
-				DataStream<String> sideOutput = streamOperator.getSideOutput(outputTag);
-				sideOutput.addSink(new JdbcTemplateSink(dataBase));
+				// 流复制 todo 多表
+				JSONArray tables = jsonObject.getJSONArray("tables");
+				for (int j=0;j<tables.size();j++) {
+					// 获取表配置
+					JSONObject tablesJSONObject = tables.getJSONObject(j);
+					SingleOutputStreamOperator<String> streamOperator = dataStreamSource1.process(new ProcessFunction<String, String>() {
+						@Override
+						public void processElement(String s, ProcessFunction<String, String>.Context context, Collector<String> collector) throws Exception {
+							collector.collect(s);
+							context.output(outputTag, s);
+						}
+					});
+					streamOperator.flatMap(new FlatMapFunction<String, Object>() {
+						@Override
+						public void flatMap(String s, Collector<Object> collector) throws Exception {
+							// 此次将类型处理为
+							LOGGER.info("将{}处理到{}.{},映射关系：{}",s,dataBaseName,tablesJSONObject.getString("table"),tablesJSONObject.getString("columnMappings"));
+							// 最终形成sql语句
+						}
+					});
+					DataStream<String> sideOutput = streamOperator.getSideOutput(outputTag);
+					sideOutput.addSink(new JdbcTemplateSink(dataBase));
+				}
 			}
 
 		});
 		// 对映射中的数据进行初始化数据库池 todo
 		// enable checkpoint
-		env.enableCheckpointing(3000);
 //			.setParallelism(1)
 //			.flatMap(new RichFlatMapFunction<String, Object>() {
 //					@Override
