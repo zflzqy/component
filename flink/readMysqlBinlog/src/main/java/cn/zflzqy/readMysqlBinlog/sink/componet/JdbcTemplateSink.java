@@ -1,4 +1,4 @@
-package cn.zflzqy.readMysqlBinlog.sink;
+package cn.zflzqy.readMysqlBinlog.sink.componet;
 
 import cn.zflzqy.readMysqlBinlog.db.DataBase;
 import cn.zflzqy.readMysqlBinlog.pool.DruidPool;
