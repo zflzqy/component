@@ -67,7 +67,7 @@ public class StreamingJob {
 		dataStreamSource.forEach(source -> {
 			DataStreamSource<String> stringDataStreamSource = source._1;
 			for (int i =0;i<source._2.size();i++){
-				// todo 根据类型策略化输出模式
+				// 根据类型策略化输出模式
 				JSONObject jsonObject = source._2.getJSONObject(i);
 				SinkContextStrategy.execute(jsonObject,stringDataStreamSource);
 			}
