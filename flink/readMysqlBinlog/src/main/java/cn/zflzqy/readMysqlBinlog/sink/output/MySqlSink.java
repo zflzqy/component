@@ -3,6 +3,7 @@ package cn.zflzqy.readMysqlBinlog.sink.output;
 import cn.zflzqy.readMysqlBinlog.db.DataBase;
 import cn.zflzqy.readMysqlBinlog.sink.SinkStrategy;
 import cn.zflzqy.readMysqlBinlog.sink.componet.JdbcTemplateSink;
+import cn.zflzqy.readMysqlBinlog.sink.enums.OpEnum;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,9 @@ import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Tuple2;
+
+import java.util.List;
 
 /**
  * @Author: zfl
@@ -56,6 +60,14 @@ public class MySqlSink  implements SinkStrategy {
                     // 此次将类型处理为
                     LOGGER.info("将{}处理到{}.{},映射关系：{}",s,dataBaseName,tablesJSONObject.getString("table"),tablesJSONObject.getString("columnMappings"));
                     // 最终形成sql语句 todo
+                    JSONObject data = JSONObject.parseObject(s);
+                    // 主键
+                    String idColumn = tablesJSONObject.getString("tableId");
+                    // 类型
+                    List<Tuple2<String, List<Object>>> sqls = OpEnum.valueOf(data.getString("op")).doOp(data, idColumn,
+                            tablesJSONObject.getString("table"), tablesJSONObject.getJSONObject("columnMappings"));
+                    collector.collect(sqls);
+
                 }
             });
             DataStream<String> sideOutput = streamOperator.getSideOutput(outputTag);

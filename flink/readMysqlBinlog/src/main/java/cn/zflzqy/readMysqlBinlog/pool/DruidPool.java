@@ -2,7 +2,6 @@ package cn.zflzqy.readMysqlBinlog.pool;
 
 import cn.zflzqy.readMysqlBinlog.db.DataBase;
 import com.alibaba.druid.pool.DruidDataSource;
-import org.apache.flink.table.expressions.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
