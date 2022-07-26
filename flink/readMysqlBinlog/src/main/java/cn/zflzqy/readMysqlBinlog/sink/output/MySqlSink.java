@@ -41,7 +41,7 @@ public class MySqlSink  implements SinkStrategy {
         dataBase.setDatabaseName(dataBaseName);
         dataBase.setUsername(config.getString("username"));
         dataBase.setPassword(config.getString("password"));
-        // 流复制 todo 多表
+        // 流复制  多表
         JSONArray tables = config.getJSONArray("tables");
         for (int j=0;j<tables.size();j++) {
             OutputTag<String> outputTag = new OutputTag<String>(StringUtils.join(new String[]{"mysqlSink",ip, String.valueOf(port),dataBaseName},j,":"), Types.STRING) {};
@@ -59,7 +59,7 @@ public class MySqlSink  implements SinkStrategy {
                 public void flatMap(String s, Collector<Object> collector) throws Exception {
                     // 此次将类型处理为
                     LOGGER.info("将{}处理到{}.{},映射关系：{}",s,dataBaseName,tablesJSONObject.getString("table"),tablesJSONObject.getString("columnMappings"));
-                    // 最终形成sql语句 todo
+                    // 最终形成sql语句
                     JSONObject data = JSONObject.parseObject(s);
                     // 主键
                     String idColumn = tablesJSONObject.getString("tableId");
