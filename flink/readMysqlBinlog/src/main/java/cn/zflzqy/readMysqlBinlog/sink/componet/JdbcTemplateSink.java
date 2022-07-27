@@ -57,7 +57,7 @@ public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
 
                 Tuple2<String,List<Tuple2<String, List<Object>>>> executeSql = (Tuple2<String,List<Tuple2<String, List<Object>>>>) value;
                 try {
-                    if (StringUtils.equals("d",executeSql.f0)){
+                    if (StringUtils.equals(executeSql.f0,"d")||StringUtils.equals(executeSql.f0,"u")){
                         for (int i=0;i<executeSql.f1.size();i++){
                             jdbcTemplate.update(executeSql.f1.get(i).f0,executeSql.f1.get(i).f1.toArray());
                         }
