@@ -2,9 +2,9 @@ package cn.zflzqy.readMysqlBinlog.sink.service;
 
 import cn.zflzqy.readMysqlBinlog.sink.enums.OpEnum;
 import com.alibaba.fastjson2.JSONObject;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Tuple2;
 
 import java.util.List;
 
