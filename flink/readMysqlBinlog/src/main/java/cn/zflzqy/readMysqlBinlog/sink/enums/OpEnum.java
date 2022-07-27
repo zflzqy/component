@@ -17,7 +17,7 @@ public enum OpEnum implements OpService {
     r {
         @Override
         public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
-            return new ArrayList<>();
+            return c.doOp(data,idField,tableName,tableMapping);
         }
     },
     // 创建
@@ -46,7 +46,7 @@ public enum OpEnum implements OpService {
             }
             insertSql.deleteCharAt(insertSql.length() - 1);
             insertSql.append(")");
-            LOGGER.info("插入语句：{}", insertSql.toString());
+            LOGGER.info("插入语句：{},参数：{}", insertSql.toString(),JSONObject.toJSONString(args));
             Tuple2<String, List<Object>> insert = new Tuple2<>(insertSql.toString(), args);
             sqls.add(insert);
             return sqls;
@@ -57,8 +57,6 @@ public enum OpEnum implements OpService {
         @Override
         public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
             List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
-            // 查询语句
-            sqls.add(this.getQuery(data, idField, tableName, tableMapping));
             // 构建参数
             List<Object> args = new ArrayList<>();
             // 更新语句
@@ -74,16 +72,21 @@ public enum OpEnum implements OpService {
                     args.add(newData.get(mapping.getKey()));
                 }
             }
+            updateSql.deleteCharAt(updateSql.length() - 1);
+
             // 构建where条件
             updateSql.append(" WHERE `" + idField + "` = ?");
             iterator = tableMapping.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, Object> entry = iterator.next();
                 if (StringUtils.equals((CharSequence) entry.getValue(), idField)) {
-                    args.add(data.getString(entry.getKey()));
+                    args.add(newData.getString(entry.getKey()));
                 }
             }
-            LOGGER.info("更新语句：{}", updateSql.toString());
+            LOGGER.info("更新语句：{},参数：{}", updateSql.toString(),JSONObject.toJSONString(args));
+
+            Tuple2<String, List<Object>> update = new Tuple2<>(updateSql.toString(), args);
+            sqls.add(update);
             return sqls;
         }
     },
@@ -104,7 +107,7 @@ public enum OpEnum implements OpService {
             }
             Tuple2<String, List<Object>> rs = new Tuple2<>("delete from  `" + tableName + "`  where `" + idField + "` = ?", args);
             sqls.add(rs);
-            LOGGER.info("删除语句：{}", rs.f0.toString());
+            LOGGER.info("删除语句：{},参数：{}", rs.f0.toString(),JSONObject.toJSONString(args));
             return sqls;
         }
     };
@@ -120,7 +123,7 @@ public enum OpEnum implements OpService {
             }
         }
         Tuple2<String, List<Object>> rs = new Tuple2<>("select * from `" + tableName + "`  where `" + idField + "` = ?", args);
-        LOGGER.info("查询语句：{}", rs.f0.toString());
+        LOGGER.info("查询语句：{},参数:{}", rs.f0.toString(),JSONObject.toJSONString(args));
         return rs;
     }
 
