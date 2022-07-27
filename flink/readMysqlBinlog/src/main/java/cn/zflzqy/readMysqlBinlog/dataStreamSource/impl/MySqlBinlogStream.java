@@ -8,12 +8,16 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @Author: zfl
  * @Date: 2022-07-24-10:46
  * @Description:
  */
 public class MySqlBinlogStream  extends DataStreamSourceFactory {
+    // 服务id
+    private static final AtomicInteger serverIds = new AtomicInteger(6000);
     @Override
     public DataStreamSource<String> getStream(JSONObject config, StreamExecutionEnvironment env) {
         // ip
@@ -35,6 +39,7 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
                 .tableList(dataBaseName+"."+tableName)
                 .username(username)
                 .password(password)
+                .serverId(String.valueOf(serverIds.incrementAndGet()))
                 .deserializer(new JsonDebeziumDeserializationSchema()) // converts SourceRecord to JSON String
                 .build();
 
