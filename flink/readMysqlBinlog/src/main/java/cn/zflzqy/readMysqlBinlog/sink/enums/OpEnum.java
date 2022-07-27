@@ -3,104 +3,124 @@ package cn.zflzqy.readMysqlBinlog.sink.enums;
 import cn.zflzqy.readMysqlBinlog.sink.service.OpService;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import scala.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple2;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author: zfl
  * @Date: 2022-07-26-19:36
  * @Description:
  */
-public enum OpEnum  implements OpService {
-    // 创建
-    c{
+public enum OpEnum implements OpService {
+    // 读取
+    r {
         @Override
-        public List<Tuple2<String,List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
-            List<Tuple2<String,List<Object>>> sqls = new ArrayList<>();
+        public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            return new ArrayList<>();
+        }
+    },
+    // 创建
+    c {
+        @Override
+        public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
             // 构建查询语句
-            sqls.add(this.getQuery(data,idField,tableName,tableMapping));
+            sqls.add(this.getQuery(data, idField, tableName, tableMapping));
             // 构建参数
             List<Object> args = new ArrayList<>();
             // 构建插入语句
-            StringBuilder insertSql = new StringBuilder("insert into `"+tableName+"` (");
-            tableMapping.entrySet().stream().map(mapping->{
+            StringBuilder insertSql = new StringBuilder("insert into `" + tableName + "` (");
+            Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
+            JSONObject newData = data.getJSONObject("after");
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> mapping = iterator.next();
                 insertSql.append("`").append(mapping.getValue()).append("`,");
-                args.add(data.get(mapping.getKey()));
-                return null;
-            });
-            insertSql.deleteCharAt(insertSql.length()-1);
+                args.add(newData.get(mapping.getKey()));
+            }
+            insertSql.deleteCharAt(insertSql.length() - 1);
             insertSql.append(") values(");
-            tableMapping.entrySet().stream().map(c->{
+            // 加入参数
+            for (int i=0;i<tableMapping.size();i++){
                 insertSql.append("?").append(",");
-                return  null;
-            });
-            insertSql.deleteCharAt(insertSql.length()-1);
+            }
+            insertSql.deleteCharAt(insertSql.length() - 1);
             insertSql.append(")");
-            LOGGER.info("插入语句：{}",insertSql.toString());
-            tableMapping.entrySet().forEach(entry -> {
-
-            });
-            Tuple2<String,List<Object>> insert = new Tuple2<>(insertSql.toString(),args);
+            LOGGER.info("插入语句：{}", insertSql.toString());
+            Tuple2<String, List<Object>> insert = new Tuple2<>(insertSql.toString(), args);
+            sqls.add(insert);
             return sqls;
         }
     },
     // 更新
-    u{
+    u {
         @Override
-        public List<Tuple2<String,List<Object>>> doOp(JSONObject data, String idField,String tableName,JSONObject tableMapping) {
-            List<Tuple2<String,List<Object>>> sqls = new ArrayList<>();
+        public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
             // 查询语句
-            sqls.add(this.getQuery(data,idField,tableName,tableMapping));
+            sqls.add(this.getQuery(data, idField, tableName, tableMapping));
             // 构建参数
             List<Object> args = new ArrayList<>();
             // 更新语句
             StringBuilder updateSql = new StringBuilder();
-            updateSql.append("UPDATE `"+tableName+"` SET ");
-            tableMapping.entrySet().stream().map(mapping->{
-                if (!StringUtils.equals((CharSequence) mapping.getValue(),idField)) {
+            updateSql.append("UPDATE `" + tableName + "` SET ");
+
+            Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
+            JSONObject newData = data.getJSONObject("after");
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> mapping = iterator.next();
+                if (!StringUtils.equals((CharSequence) mapping.getValue(), idField)) {
                     updateSql.append("`").append(mapping.getValue()).append("` = ?,");
-                    args.add(data.get(mapping.getKey()));
+                    args.add(newData.get(mapping.getKey()));
                 }
-                return null;
-            });
+            }
             // 构建where条件
-            updateSql.append(" WHERE `"+idField+"` = ?");
-            tableMapping.entrySet().forEach(entry -> {
-                if (StringUtils.equals((CharSequence) entry.getValue(),idField)){
+            updateSql.append(" WHERE `" + idField + "` = ?");
+            iterator = tableMapping.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> entry = iterator.next();
+                if (StringUtils.equals((CharSequence) entry.getValue(), idField)) {
                     args.add(data.getString(entry.getKey()));
                 }
-            });
-            LOGGER.info("更新语句：{}",updateSql.toString());
+            }
+            LOGGER.info("更新语句：{}", updateSql.toString());
             return sqls;
         }
     },
     // 删除
-    d{
+    d {
         @Override
-        public List<Tuple2<String,List<Object>>> doOp(JSONObject data, String idField,String tableName,JSONObject tableMapping) {
-            List<Tuple2<String,List<Object>>> sqls = new ArrayList<>();
+        public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
             List<Object> args = new ArrayList<>();
-            tableMapping.entrySet().forEach(entry -> {
-                if (StringUtils.equals((CharSequence) entry.getValue(),idField)){
-                    args.add(data.getString(entry.getKey()));
+
+            JSONObject oldData = data.getJSONObject("before");
+            Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> entry = iterator.next();
+                if (StringUtils.equals((CharSequence) entry.getValue(), idField)) {
+                    args.add(oldData.getString(entry.getKey()));
                 }
-            });
-            Tuple2<String,List<Object>> rs = new Tuple2<>("delete from  `"+tableName+"`  where `"+idField+"` = ?",args);
+            }
+            Tuple2<String, List<Object>> rs = new Tuple2<>("delete from  `" + tableName + "`  where `" + idField + "` = ?", args);
+            sqls.add(rs);
+            LOGGER.info("删除语句：{}", rs.f0.toString());
             return sqls;
         }
     };
-    public Tuple2<String,List<Object>> getQuery(JSONObject data, String idField,String tableName,JSONObject tableMapping){
+
+    public Tuple2<String, List<Object>> getQuery(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+        JSONObject newData = data.getJSONObject("after");
         List<Object> args = new ArrayList<>();
-        tableMapping.entrySet().forEach(entry -> {
-            if (StringUtils.equals((CharSequence) entry.getValue(),idField)){
-                args.add(data.getString(entry.getKey()));
+        Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Object> entry = iterator.next();
+            if (StringUtils.equals((CharSequence) entry.getValue(), idField)) {
+                args.add(newData.getString(entry.getKey()));
             }
-        });
-        Tuple2<String,List<Object>> rs = new Tuple2<>("select * from `"+tableName+"`  where `"+idField+"` = ?",args);
+        }
+        Tuple2<String, List<Object>> rs = new Tuple2<>("select * from `" + tableName + "`  where `" + idField + "` = ?", args);
+        LOGGER.info("查询语句：{}", rs.f0.toString());
         return rs;
     }
 

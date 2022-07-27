@@ -19,24 +19,15 @@
 package cn.zflzqy.readMysqlBinlog;
 
 import cn.zflzqy.readMysqlBinlog.dataStreamSource.DataStreamStrategy;
-import cn.zflzqy.readMysqlBinlog.db.DataBase;
 import cn.zflzqy.readMysqlBinlog.parameter.ParameterFactory;
 import cn.zflzqy.readMysqlBinlog.sink.SinkContextStrategy;
-import cn.zflzqy.readMysqlBinlog.sink.componet.JdbcTemplateSink;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.ProcessFunction;
-import org.apache.flink.util.Collector;
-import org.apache.flink.util.OutputTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Tuple2;
 
 import java.util.List;
 
@@ -56,7 +47,7 @@ public class StreamingJob {
 		ParameterFactory parameterFactory = new ParameterFactory(args);
 		// 获取解析数据
 		JSONArray config = parameterFactory.getResult();
-		// 订阅binglog/kafka,构建连接池，处理数据
+		// 订阅binlog/kafka,构建连接池，处理数据
 		// 启动监听库：库名：配置信息作为key
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		env.setParallelism(1);
@@ -65,13 +56,12 @@ public class StreamingJob {
 		List<Tuple2<DataStreamSource<String>, JSONArray>> dataStreamSource = DataStreamStrategy.getDataStreamSource(config, env);
 		// 构建数据库信息对象
 		dataStreamSource.forEach(source -> {
-			DataStreamSource<String> stringDataStreamSource = source._1;
-			for (int i =0;i<source._2.size();i++){
+			DataStreamSource<String> stringDataStreamSource = source.f0;
+			for (int i =0;i<source.f1.size();i++){
 				// 根据类型策略化输出模式
-				JSONObject jsonObject = source._2.getJSONObject(i);
+				JSONObject jsonObject = source.f1.getJSONObject(i);
 				SinkContextStrategy.execute(jsonObject,stringDataStreamSource);
 			}
-
 		});
 
 		env.execute("read binlog to target info ");
