@@ -57,11 +57,11 @@ public class ShiroRedisProperties {
     }
 
     public String getCasUrl() {
-        return casUrl;
+        return StrUtil.addSuffixIfNot(this.casUrl,"/");
     }
 
     public void setCasUrl(String casUrl) {
-        this.casUrl = casUrl;
+        this.casUrl = StrUtil.addSuffixIfNot(casUrl,"/");
     }
 
     public List<String> getAnonUrl() {
