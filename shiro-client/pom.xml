@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <artifactId>shiro-client</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
     <name>shiro-client</name>
     <description>shiro-client</description>
     <properties>
