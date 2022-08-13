@@ -23,7 +23,7 @@ public class JsonFileParseHandler extends ParameterParseHandler {
             try {
                 return JSONArray.parseArray(FileUtils.fileRead(jsonPath));
             } catch (IOException e) {
-                LOGGER.warn("解析json文件异常：{}",e.getMessage());
+                LOGGER.warn("解析json文件异常：",e);
             }
         }
         // 提交给下个处理者
