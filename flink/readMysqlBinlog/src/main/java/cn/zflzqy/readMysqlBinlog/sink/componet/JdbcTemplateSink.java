@@ -69,7 +69,7 @@ public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
                     }
                 }catch (Exception e){
                     LOGGER.error("执行语句：{}", JSONObject.toJSONString(value));
-                    LOGGER.error("执行失败：{}",e.getMessage());
+                    LOGGER.error("执行失败：",e);
                     // 事务回滚
                     status.setRollbackOnly();
                 }

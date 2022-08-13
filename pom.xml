@@ -15,7 +15,6 @@
     <modules>
         <module>webSocket</module>
         <module>shiro-client</module>
-        <module>async</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

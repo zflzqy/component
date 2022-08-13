@@ -40,7 +40,7 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
                 .username(username)
                 .password(password)
                 .serverId(String.valueOf(serverIds.incrementAndGet()))
-                .deserializer(new JsonDebeziumDeserializationSchema()) // converts SourceRecord to JSON String
+                .deserializer(new JsonDebeziumDeserializationSchema())
                 .build();
 
         DataStreamSource<String> streamSource = env.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(),ip+port+dataBaseName+tableName);

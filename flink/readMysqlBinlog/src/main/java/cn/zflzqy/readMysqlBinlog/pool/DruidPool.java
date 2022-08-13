@@ -49,7 +49,7 @@ public class DruidPool {
             dataSources.put(dataBase.hashCode(), druidDataSource);
             LOGGER.info("连接池初始化成功:{},连接池大小：{}", druidDataSource.hashCode(), dataSources.size());
         } catch (Exception e) {
-            LOGGER.info("初始化连接池异常：{}", e.getMessage());
+            LOGGER.info("初始化连接池异常：", e);
         }
     }
 

@@ -25,7 +25,7 @@ public class PropertitesFileParseHandler extends ParameterParseHandler {
                 // 需要将propertites转换成可识别的json结构 todo 暂未实现
                 return new JSONArray(propertiesFile.toMap());
             } catch (IOException e) {
-                LOGGER.warn("解析配置文件异常：{}",e.getMessage());
+                LOGGER.warn("解析配置文件异常：",e);
             }
         }
         // 提交给下个处理者
