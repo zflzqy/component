@@ -1,10 +1,12 @@
 package cn.zflzqy.readMysqlBinlog.parameter.impl;
 
 import cn.zflzqy.readMysqlBinlog.parameter.ParameterParseHandler;
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.codehaus.plexus.util.FileUtils;
+import pl.jalokim.propertiestojson.util.PropertiesToJsonConverter;
 
 import java.io.IOException;
 
@@ -22,8 +24,9 @@ public class PropertitesFileParseHandler extends ParameterParseHandler {
             ParameterTool propertiesFile = null;
             try {
                 propertiesFile = ParameterTool.fromPropertiesFile(configPath);
+                String jsonFromProperties = new PropertiesToJsonConverter().convertToJson(propertiesFile.getProperties());
                 // 需要将propertites转换成可识别的json结构 todo 暂未实现
-                return new JSONArray(propertiesFile.toMap());
+                return JSON.parseArray(jsonFromProperties);
             } catch (IOException e) {
                 LOGGER.warn("解析配置文件异常：",e);
             }
