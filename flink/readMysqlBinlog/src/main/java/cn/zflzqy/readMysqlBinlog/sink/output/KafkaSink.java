@@ -12,6 +12,7 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 public class KafkaSink implements SinkStrategy {
     @Override
     public void doOperation(JSONObject config, DataStreamSource<String> dataStreamSource) {
+        // todo
 
     }
 }

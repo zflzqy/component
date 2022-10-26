@@ -8,7 +8,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
@@ -36,7 +36,6 @@ public class MySqlSink implements SinkStrategy {
         String ip = config.getString("ip");
         int port = config.getInteger("port");
         String dataBaseName = config.getString("dataBaseName");
-
         dataBase.setIp(ip);
         dataBase.setPort(port);
         dataBase.setDatabaseName(dataBaseName);
@@ -45,11 +44,10 @@ public class MySqlSink implements SinkStrategy {
         // 流复制  多表
         JSONArray tables = config.getJSONArray("tables");
         for (int j = 0; j < tables.size(); j++) {
-            OutputTag<Object> outputTag = new OutputTag<Object>(StringUtils.join(new String[]{"mysqlSink", ip, String.valueOf(port), dataBaseName}, j, ":")) {
-            };
+            OutputTag<Object> outputTag = new OutputTag<Object>(StringUtils.join(new String[]{"mysqlSink", ip, String.valueOf(port), dataBaseName}, j, ":")) {};
             // 获取表配置
             JSONObject tablesJSONObject = tables.getJSONObject(j);
-            dataStreamSource
+            DataStreamSink dataStreamSink = dataStreamSource
                     .flatMap(new FlatMapFunction<String, Object>() {
                         @Override
                         public void flatMap(String s, Collector<Object> collector) {
@@ -66,17 +64,17 @@ public class MySqlSink implements SinkStrategy {
                             if (!CollectionUtils.isEmpty(sqls)) {
                                 collector.collect(rs);
                             }
-
                         }
                     })
                     .process(new ProcessFunction<Object, Object>() {
                         @Override
-                        public void processElement(Object s, ProcessFunction<Object, Object>.Context context, Collector<Object> collector){
+                        public void processElement(Object s, ProcessFunction<Object, Object>.Context context, Collector<Object> collector) {
                             collector.collect(s);
                             context.output(outputTag, s);
                         }
                     })
                     .getSideOutput(outputTag)
+                    // todo 可以再输出到其他地方
                     .addSink(new JdbcTemplateSink(dataBase));
 
         }
