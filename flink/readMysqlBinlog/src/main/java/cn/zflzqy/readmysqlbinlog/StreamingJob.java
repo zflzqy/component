@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package cn.zflzqy.readMysqlBinlog;
+package cn.zflzqy.readmysqlbinlog;
 
-import cn.zflzqy.readMysqlBinlog.dataStreamSource.DataStreamStrategy;
-import cn.zflzqy.readMysqlBinlog.parameter.ParameterFactory;
-import cn.zflzqy.readMysqlBinlog.sink.SinkContextStrategy;
+import cn.zflzqy.readmysqlbinlog.dataStreamSource.DataStreamStrategy;
+import cn.zflzqy.readmysqlbinlog.parameter.ParameterFactory;
+import cn.zflzqy.readmysqlbinlog.sink.SinkContextStrategy;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.api.java.tuple.Tuple2;

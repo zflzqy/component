@@ -1,4 +1,4 @@
-package cn.zflzqy.readMysqlBinlog.sink.componet;
+package cn.zflzqy.readmysqlbinlog.sink.componet;
 
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
@@ -7,7 +7,7 @@ import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
  * @Date: 2022-07-24-11:53
  * @Description:
  */
-public class KafkaSink<IN> extends RichSinkFunction<IN> {
+public class Kafka<IN> extends RichSinkFunction<IN> {
     @Override
     public void invoke(IN value, Context context) throws Exception {
         super.invoke(value, context);

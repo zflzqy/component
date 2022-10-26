@@ -1,13 +1,9 @@
-package cn.zflzqy.readMysqlBinlog.parameter;
+package cn.zflzqy.readmysqlbinlog.parameter;
 
-import cn.zflzqy.readMysqlBinlog.parameter.impl.JsonFileParseHandler;
-import cn.zflzqy.readMysqlBinlog.parameter.impl.PropertitesFileParseHandler;
+import cn.zflzqy.readmysqlbinlog.parameter.impl.JsonFileParseHandler;
+import cn.zflzqy.readmysqlbinlog.parameter.impl.PropertiesFileParseHandler;
 import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.api.java.utils.ParameterTool;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @Author: zfl
@@ -23,8 +19,8 @@ public class ParameterFactory {
         // json文件处理
         JsonFileParseHandler jsonFileParseHandler = new JsonFileParseHandler();
         // 配置文件处理
-        PropertitesFileParseHandler propertitesFileParseHandler = new PropertitesFileParseHandler();
-        jsonFileParseHandler.setNext(propertitesFileParseHandler);
+        PropertiesFileParseHandler propertiesFileParseHandler = new PropertiesFileParseHandler();
+        jsonFileParseHandler.setNext(propertiesFileParseHandler);
         parameterTool =  ParameterTool.fromArgs(args);
         // 定义第一个处理者
         parameterParseHandler = jsonFileParseHandler;
