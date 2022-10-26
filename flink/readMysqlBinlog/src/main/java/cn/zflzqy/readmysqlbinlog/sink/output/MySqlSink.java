@@ -79,6 +79,10 @@ public class MySqlSink implements SinkStrategy {
                                 // 主键
                                 String idColumn = tablesJSONObject.getString("tableId");
                                 // 类型
+                                String op = data.getString("op");
+                                if (StringUtils.isBlank(op)){
+                                    return;
+                                }
                                 List<Tuple2<String, List<Object>>> sqls = OpEnum.valueOf(data.getString("op")).doOp(data, idColumn,
                                         tablesJSONObject.getString("table"), tablesJSONObject.getJSONObject("columnMappings"));
                                 Tuple2<String, List<Tuple2<String, List<Object>>>> rs = new Tuple2<>(data.getString("op"), sqls);
