@@ -7,7 +7,11 @@ import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.kafka.connect.json.DecimalFormat;
+import org.apache.kafka.connect.json.JsonConverterConfig;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -32,6 +36,12 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
         String username = config.getString("username");
         // 密码
         String password = config.getString("password");
+
+        // 解决BigDecimal序列化异常
+        Map<String,Object> serializerConfig = new HashMap();
+        serializerConfig.put(JsonConverterConfig.DECIMAL_FORMAT_CONFIG, DecimalFormat.NUMERIC.name());
+        JsonDebeziumDeserializationSchema jdd = new JsonDebeziumDeserializationSchema(false, serializerConfig);
+        // 获取数据源
         MySqlSource<String> mySqlSource = MySqlSource.<String>builder()
                 .hostname(ip)
                 .port(port)
@@ -40,10 +50,9 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
                 .username(username)
                 .password(password)
                 .serverId(String.valueOf(serverIds.incrementAndGet()))
-                .deserializer(new JsonDebeziumDeserializationSchema())
+                .deserializer(jdd)
                 .build();
 
-        DataStreamSource<String> streamSource = env.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(),ip+port+dataBaseName+tableName);
-        return streamSource;
+        return env.fromSource(mySqlSource, WatermarkStrategy.noWatermarks(),ip+port+dataBaseName+tableName);
     }
 }
