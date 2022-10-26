@@ -42,40 +42,63 @@ public class MySqlSink implements SinkStrategy {
         dataBase.setPassword(config.getString("password"));
         // 流复制  多表
         JSONArray tables = config.getJSONArray("tables");
-        for (int j = 0; j < tables.size(); j++) {
-            OutputTag<Object> outputTag = new OutputTag<Object>(StringUtils.join(new String[]{"mysqlSink", ip, String.valueOf(port), dataBaseName}, j, ":")) {};
-            // 获取表配置
-            JSONObject tablesJSONObject = tables.getJSONObject(j);
-            DataStreamSink dataStreamSink = dataStreamSource
+        if (CollectionUtils.isEmpty(tables)){
+            dataStreamSource
                     .flatMap(new FlatMapFunction<String, Object>() {
                         @Override
                         public void flatMap(String s, Collector<Object> collector) {
                             // 此次将类型处理为
-                            LOGGER.info("将{}处理到{}.{},映射关系：{}", s, dataBaseName, tablesJSONObject.getString("table"), tablesJSONObject.getString("columnMappings"));
+                            LOGGER.info("将{}处理到{}", s, dataBaseName);
                             // 最终形成sql语句
                             JSONObject data = JSONObject.parseObject(s);
-                            // 主键
-                            String idColumn = tablesJSONObject.getString("tableId");
                             // 类型
-                            List<Tuple2<String, List<Object>>> sqls = OpEnum.valueOf(data.getString("op")).doOp(data, idColumn,
-                                    tablesJSONObject.getString("table"), tablesJSONObject.getJSONObject("columnMappings"));
+                            List<Tuple2<String, List<Object>>> sqls = OpEnum.valueOf(data.getString("op")).doOp(data, null,
+                                    null,null);
                             Tuple2<String, List<Tuple2<String, List<Object>>>> rs = new Tuple2<>(data.getString("op"), sqls);
                             if (!CollectionUtils.isEmpty(sqls)) {
                                 collector.collect(rs);
                             }
                         }
                     })
-                    .process(new ProcessFunction<Object, Object>() {
-                        @Override
-                        public void processElement(Object s, ProcessFunction<Object, Object>.Context context, Collector<Object> collector) {
-                            collector.collect(s);
-                            context.output(outputTag, s);
-                        }
-                    })
-                    .getSideOutput(outputTag)
                     // todo 可以再输出到其他地方
                     .addSink(new JdbcTemplate(dataBase));
+        }else {
+            for (int j = 0; j < tables.size(); j++) {
+                OutputTag<Object> outputTag = new OutputTag<Object>(StringUtils.join(new String[]{"mysqlSink", ip, String.valueOf(port), dataBaseName}, j, ":")) {
+                };
+                // 获取表配置
+                JSONObject tablesJSONObject = tables.getJSONObject(j);
+                DataStreamSink dataStreamSink = dataStreamSource
+                        .flatMap(new FlatMapFunction<String, Object>() {
+                            @Override
+                            public void flatMap(String s, Collector<Object> collector) {
+                                // 此次将类型处理为
+                                LOGGER.info("将{}处理到{}.{},映射关系：{}", s, dataBaseName, tablesJSONObject.getString("table"), tablesJSONObject.getString("columnMappings"));
+                                // 最终形成sql语句
+                                JSONObject data = JSONObject.parseObject(s);
+                                // 主键
+                                String idColumn = tablesJSONObject.getString("tableId");
+                                // 类型
+                                List<Tuple2<String, List<Object>>> sqls = OpEnum.valueOf(data.getString("op")).doOp(data, idColumn,
+                                        tablesJSONObject.getString("table"), tablesJSONObject.getJSONObject("columnMappings"));
+                                Tuple2<String, List<Tuple2<String, List<Object>>>> rs = new Tuple2<>(data.getString("op"), sqls);
+                                if (!CollectionUtils.isEmpty(sqls)) {
+                                    collector.collect(rs);
+                                }
+                            }
+                        })
+                        .process(new ProcessFunction<Object, Object>() {
+                            @Override
+                            public void processElement(Object s, ProcessFunction<Object, Object>.Context context, Collector<Object> collector) {
+                                collector.collect(s);
+                                context.output(outputTag, s);
+                            }
+                        })
+                        .getSideOutput(outputTag)
+                        // todo 可以再输出到其他地方
+                        .addSink(new JdbcTemplate(dataBase));
 
+            }
         }
     }
 }

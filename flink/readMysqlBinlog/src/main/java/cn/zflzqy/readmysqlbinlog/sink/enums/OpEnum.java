@@ -25,6 +25,10 @@ public enum OpEnum implements OpService {
     c {
         @Override
         public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            // 如果没用配置表，就从数据种获取
+            if (StringUtils.isBlank(tableName)) {
+                tableName = getTableName(data);
+            }
             List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
             // 构建查询语句
             sqls.add(this.getQuery(data, idField, tableName, tableMapping));
@@ -42,10 +46,6 @@ public enum OpEnum implements OpService {
                     Map.Entry<String, Object> entry = iterator.next();
                     insertSql.append("`").append(entry.getKey()).append("`,");
                     args.add(entry.getValue());
-                }
-                // 如果没用配置表，就从数据种获取
-                if (StringUtils.isBlank(tableName)) {
-                    tableName = getTableName(data);
                 }
             }else {
                 argsCount = tableMapping.size();
@@ -75,6 +75,10 @@ public enum OpEnum implements OpService {
     u {
         @Override
         public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            // 如果没用配置表，就从数据种获取
+            if (StringUtils.isBlank(tableName)) {
+                tableName = getTableName(data);
+            }
             List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
             // 构建参数
             List<Object> args = new ArrayList<>();
@@ -101,10 +105,6 @@ public enum OpEnum implements OpService {
                     args.add(oldData.get(entry.getKey()));
                 }
 
-                // 如果没用配置表，就从数据种获取
-                if (StringUtils.isBlank(tableName)) {
-                    tableName = getTableName(data);
-                }
             }else {
                 Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
                 while (iterator.hasNext()) {
