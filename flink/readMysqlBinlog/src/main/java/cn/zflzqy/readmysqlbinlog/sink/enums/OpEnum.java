@@ -43,6 +43,10 @@ public enum OpEnum implements OpService {
                     insertSql.append("`").append(entry.getKey()).append("`,");
                     args.add(entry.getValue());
                 }
+                // 如果没用配置表，就从数据种获取
+                if (StringUtils.isBlank(tableName)) {
+                    tableName = getTableName(data);
+                }
             }else {
                 argsCount = tableMapping.size();
                 Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
@@ -51,6 +55,7 @@ public enum OpEnum implements OpService {
                     insertSql.append("`").append(mapping.getValue()).append("`,");
                     args.add(newData.get(mapping.getKey()));
                 }
+
             }
             insertSql.deleteCharAt(insertSql.length() - 1);
             insertSql.append(") values(");
@@ -95,6 +100,11 @@ public enum OpEnum implements OpService {
                     whereSql.append("`").append(entry.getKey()).append("` = ? and");
                     args.add(oldData.get(entry.getKey()));
                 }
+
+                // 如果没用配置表，就从数据种获取
+                if (StringUtils.isBlank(tableName)) {
+                    tableName = getTableName(data);
+                }
             }else {
                 Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
                 while (iterator.hasNext()) {
@@ -133,6 +143,10 @@ public enum OpEnum implements OpService {
                     Map.Entry<String, Object> next = iterator.next();
                     args.add(next.getValue());
                     whereSql.append(" `").append(next.getKey()).append("` =? and");
+                }
+                // 如果没用配置表，就从数据种获取
+                if (StringUtils.isBlank(tableName)) {
+                    tableName = getTableName(data);
                 }
             }else {
                 Iterator<Map.Entry<String, Object>> iterator = tableMapping.entrySet().iterator();
@@ -173,12 +187,20 @@ public enum OpEnum implements OpService {
                 args.add(entry.getValue());
                 whereSql.append(" `").append(entry.getKey()).append("` = ? and");
             }
+            // 如果没用配置表，就从数据种获取
+            if (StringUtils.isBlank(tableName)) {
+                tableName = getTableName(data);
+            }
         }
         // 最终的条件sql
         String conditionSql = StringUtils.removeEnd(whereSql.toString(), "and");
         Tuple2<String, List<Object>> rs = new Tuple2<>("select * from `" + tableName+"` " +conditionSql, args);
         LOGGER.info("查询语句：{},参数:{}", rs.f0.toString(),JSONObject.toJSONString(args));
         return rs;
+    }
+
+    public String getTableName(JSONObject data){
+        return  data.getJSONObject("source").getString("table");
     }
 
 }
