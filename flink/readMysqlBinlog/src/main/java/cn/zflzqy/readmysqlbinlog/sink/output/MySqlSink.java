@@ -1,14 +1,13 @@
-package cn.zflzqy.readMysqlBinlog.sink.output;
+package cn.zflzqy.readmysqlbinlog.sink.output;
 
-import cn.zflzqy.readMysqlBinlog.db.DataBase;
-import cn.zflzqy.readMysqlBinlog.sink.SinkStrategy;
-import cn.zflzqy.readMysqlBinlog.sink.componet.JdbcTemplateSink;
-import cn.zflzqy.readMysqlBinlog.sink.enums.OpEnum;
+import cn.zflzqy.readmysqlbinlog.db.DataBase;
+import cn.zflzqy.readmysqlbinlog.sink.SinkStrategy;
+import cn.zflzqy.readmysqlbinlog.sink.componet.JdbcTemplate;
+import cn.zflzqy.readmysqlbinlog.sink.enums.OpEnum;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
@@ -75,7 +74,7 @@ public class MySqlSink implements SinkStrategy {
                     })
                     .getSideOutput(outputTag)
                     // todo 可以再输出到其他地方
-                    .addSink(new JdbcTemplateSink(dataBase));
+                    .addSink(new JdbcTemplate(dataBase));
 
         }
     }

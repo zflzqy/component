@@ -1,6 +1,6 @@
-package cn.zflzqy.readMysqlBinlog.sink.enums;
+package cn.zflzqy.readmysqlbinlog.sink.enums;
 
-import cn.zflzqy.readMysqlBinlog.sink.service.OpService;
+import cn.zflzqy.readmysqlbinlog.sink.service.OpService;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.java.tuple.Tuple2;

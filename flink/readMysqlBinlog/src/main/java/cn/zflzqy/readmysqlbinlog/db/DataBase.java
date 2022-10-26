@@ -1,6 +1,5 @@
-package cn.zflzqy.readMysqlBinlog.db;
+package cn.zflzqy.readmysqlbinlog.db;
 import lombok.Data;
-import org.apache.flink.table.expressions.In;
 
 import java.io.Serializable;
 

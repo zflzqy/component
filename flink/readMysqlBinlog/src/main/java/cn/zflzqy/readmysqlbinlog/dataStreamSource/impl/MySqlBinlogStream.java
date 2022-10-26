@@ -1,6 +1,6 @@
-package cn.zflzqy.readMysqlBinlog.dataStreamSource.impl;
+package cn.zflzqy.readmysqlbinlog.dataStreamSource.impl;
 
-import cn.zflzqy.readMysqlBinlog.dataStreamSource.DataStreamSourceFactory;
+import cn.zflzqy.readmysqlbinlog.dataStreamSource.DataStreamSourceFactory;
 import com.alibaba.fastjson2.JSONObject;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @Description:
  */
 public class MySqlBinlogStream  extends DataStreamSourceFactory {
-    // 服务id
-    private static final AtomicInteger serverIds = new AtomicInteger(6000);
+    /** 服务id */
+    private static final AtomicInteger SERVER_IDS = new AtomicInteger(6000);
     @Override
     public DataStreamSource<String> getStream(JSONObject config, StreamExecutionEnvironment env) {
         // ip
@@ -38,7 +38,7 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
         String password = config.getString("password");
 
         // 解决BigDecimal序列化异常
-        Map<String,Object> serializerConfig = new HashMap();
+        Map<String,Object> serializerConfig = new HashMap(1);
         serializerConfig.put(JsonConverterConfig.DECIMAL_FORMAT_CONFIG, DecimalFormat.NUMERIC.name());
         JsonDebeziumDeserializationSchema jdd = new JsonDebeziumDeserializationSchema(false, serializerConfig);
         // 获取数据源
@@ -49,7 +49,7 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
                 .tableList(dataBaseName+"."+tableName)
                 .username(username)
                 .password(password)
-                .serverId(String.valueOf(serverIds.incrementAndGet()))
+                .serverId(String.valueOf(SERVER_IDS.incrementAndGet()))
                 .deserializer(jdd)
                 .build();
 

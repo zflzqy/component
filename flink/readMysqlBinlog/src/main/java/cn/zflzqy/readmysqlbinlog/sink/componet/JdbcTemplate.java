@@ -1,16 +1,15 @@
-package cn.zflzqy.readMysqlBinlog.sink.componet;
+package cn.zflzqy.readmysqlbinlog.sink.componet;
 
-import cn.zflzqy.readMysqlBinlog.db.DataBase;
-import cn.zflzqy.readMysqlBinlog.pool.DruidPool;
+import cn.zflzqy.readmysqlbinlog.db.DataBase;
+import cn.zflzqy.readmysqlbinlog.pool.DruidPool;
+import cn.zflzqy.readmysqlbinlog.sink.enums.OpEnum;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -26,19 +25,20 @@ import java.util.Map;
  * @Date: 2022-07-23-10:57
  * @Description:
  */
-public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcTemplateSink.class);
-    private JdbcTemplate jdbcTemplate;
-    // jdbc事务编程
+public class JdbcTemplate<IN> extends RichSinkFunction<IN> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcTemplate.class);
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    /** jdbc事务编程 */
     private TransactionTemplate transactionTemplate;
     private DataBase dataBase;
 
-    public JdbcTemplateSink(DataBase dataBase) {
+    public JdbcTemplate(DataBase dataBase) {
         this.dataBase = dataBase;
     }
 
+    @Override
     public void open(Configuration parameters) throws Exception {
-        jdbcTemplate = new JdbcTemplate();
+        jdbcTemplate = new org.springframework.jdbc.core.JdbcTemplate();
         DataSource dataSource = DruidPool.getDataSource(dataBase);
         jdbcTemplate.setDataSource(dataSource);
         // 事务构建
@@ -48,6 +48,7 @@ public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
         LOGGER.info("获取数据库连接池：{},构建jdbcTemplate:{}",dataSource.hashCode(),jdbcTemplate.hashCode());
         super.open(parameters);
     }
+
     @Override
     public void invoke(IN value, Context context) throws Exception {
         super.invoke(value, context);
@@ -57,7 +58,7 @@ public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
 
                 Tuple2<String,List<Tuple2<String, List<Object>>>> executeSql = (Tuple2<String,List<Tuple2<String, List<Object>>>>) value;
                 try {
-                    if (StringUtils.equals(executeSql.f0,"d")||StringUtils.equals(executeSql.f0,"u")){
+                    if (StringUtils.equals(executeSql.f0, OpEnum.d.name())||StringUtils.equals(executeSql.f0,OpEnum.u.name())){
                         for (int i=0;i<executeSql.f1.size();i++){
                             jdbcTemplate.update(executeSql.f1.get(i).f0,executeSql.f1.get(i).f1.toArray());
                         }

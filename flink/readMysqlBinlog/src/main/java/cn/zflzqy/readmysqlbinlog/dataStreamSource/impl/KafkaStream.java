@@ -1,6 +1,6 @@
-package cn.zflzqy.readMysqlBinlog.dataStreamSource.impl;
+package cn.zflzqy.readmysqlbinlog.dataStreamSource.impl;
 
-import cn.zflzqy.readMysqlBinlog.dataStreamSource.DataStreamSourceFactory;
+import cn.zflzqy.readmysqlbinlog.dataStreamSource.DataStreamSourceFactory;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;

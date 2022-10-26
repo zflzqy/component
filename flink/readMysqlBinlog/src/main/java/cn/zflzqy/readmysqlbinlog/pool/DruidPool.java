@@ -1,6 +1,6 @@
-package cn.zflzqy.readMysqlBinlog.pool;
+package cn.zflzqy.readmysqlbinlog.pool;
 
-import cn.zflzqy.readMysqlBinlog.db.DataBase;
+import cn.zflzqy.readmysqlbinlog.db.DataBase;
 import com.alibaba.druid.pool.DruidDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

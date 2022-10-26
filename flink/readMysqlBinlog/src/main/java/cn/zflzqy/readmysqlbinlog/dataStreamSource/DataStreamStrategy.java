@@ -1,7 +1,7 @@
-package cn.zflzqy.readMysqlBinlog.dataStreamSource;
+package cn.zflzqy.readmysqlbinlog.dataStreamSource;
 
-import cn.zflzqy.readMysqlBinlog.dataStreamSource.impl.KafkaStream;
-import cn.zflzqy.readMysqlBinlog.dataStreamSource.impl.MySqlBinlogStream;
+import cn.zflzqy.readmysqlbinlog.dataStreamSource.impl.KafkaStream;
+import cn.zflzqy.readmysqlbinlog.dataStreamSource.impl.MySqlBinlogStream;
 import com.alibaba.fastjson2.JSONArray;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
