@@ -58,13 +58,16 @@ public class JdbcTemplate<IN> extends RichSinkFunction<IN> {
 
                 Tuple2<String,List<Tuple2<String, List<Object>>>> executeSql = (Tuple2<String,List<Tuple2<String, List<Object>>>>) value;
                 try {
+                    // 如果是删除或更新
                     if (StringUtils.equals(executeSql.f0, OpEnum.d.name())||StringUtils.equals(executeSql.f0,OpEnum.u.name())){
                         for (int i=0;i<executeSql.f1.size();i++){
                             jdbcTemplate.update(executeSql.f1.get(i).f0,executeSql.f1.get(i).f1.toArray());
                         }
                     }else {
+                        // 其他情况，就是快照读和新增，需要先查询一次数据
                         List<Map<String, Object>> list = jdbcTemplate.queryForList(executeSql.f1.get(0).f0, executeSql.f1.get(0).f1.toArray());
                         if (CollectionUtils.isEmpty(list)){
+                            // 从数组第二个获取插入语句
                             jdbcTemplate.update(executeSql.f1.get(1).f0,executeSql.f1.get(1).f1.toArray());
                         }
                     }

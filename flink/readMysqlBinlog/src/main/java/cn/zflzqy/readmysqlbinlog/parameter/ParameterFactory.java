@@ -19,8 +19,8 @@ public class ParameterFactory {
         // json文件处理
         JsonFileParseHandler jsonFileParseHandler = new JsonFileParseHandler();
         // 配置文件处理
-        PropertiesFileParseHandler propertitesFileParseHandler = new PropertiesFileParseHandler();
-        jsonFileParseHandler.setNext(propertitesFileParseHandler);
+        PropertiesFileParseHandler propertiesFileParseHandler = new PropertiesFileParseHandler();
+        jsonFileParseHandler.setNext(propertiesFileParseHandler);
         parameterTool =  ParameterTool.fromArgs(args);
         // 定义第一个处理者
         parameterParseHandler = jsonFileParseHandler;
