@@ -3,7 +3,6 @@ package cn.zflzqy.readMysqlBinlog.parameter.impl;
 import cn.zflzqy.readMysqlBinlog.parameter.ParameterParseHandler;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.codehaus.plexus.util.FileUtils;
 import pl.jalokim.propertiestojson.util.PropertiesToJsonConverter;
@@ -15,7 +14,7 @@ import java.io.IOException;
  * @Date: 2022-07-24-9:27
  * @Description:命令行解析
  */
-public class PropertitesFileParseHandler extends ParameterParseHandler {
+public class PropertiesFileParseHandler extends ParameterParseHandler {
     @Override
     public JSONArray handleRequest(ParameterTool parameterTool)  {
         String configPath = parameterTool.get("configPath");
