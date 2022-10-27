@@ -1,5 +1,6 @@
 package cn.zflzqy.readmysqlbinlog.dataStreamSource;
 
+import cn.zflzqy.readmysqlbinlog.dataStreamSource.enums.DataTypeEnum;
 import cn.zflzqy.readmysqlbinlog.dataStreamSource.impl.KafkaStream;
 import cn.zflzqy.readmysqlbinlog.dataStreamSource.impl.MySqlBinlogStream;
 import com.alibaba.fastjson2.JSONArray;
@@ -19,8 +20,8 @@ import java.util.List;
 public class DataStreamStrategy {
     private static HashMap<String, DataStreamSourceFactory> streamSourceHashMap = new HashMap<>(4);
     static {
-        streamSourceHashMap.put("mysql-binlog", new MySqlBinlogStream());
-        streamSourceHashMap.put("kafka", new KafkaStream());
+        streamSourceHashMap.put(DataTypeEnum.mysqlBingLog.name(), new MySqlBinlogStream());
+        streamSourceHashMap.put(DataTypeEnum.kafka.name(), new KafkaStream());
     }
 
     /**
