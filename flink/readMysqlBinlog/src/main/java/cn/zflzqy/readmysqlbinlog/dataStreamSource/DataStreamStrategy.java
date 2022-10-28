@@ -20,8 +20,8 @@ import java.util.List;
 public class DataStreamStrategy {
     private static HashMap<String, DataStreamSourceFactory> streamSourceHashMap = new HashMap<>(4);
     static {
-        streamSourceHashMap.put(DataTypeEnum.mysqlBingLog.name(), new MySqlBinlogStream());
-        streamSourceHashMap.put(DataTypeEnum.kafka.name(), new KafkaStream());
+        streamSourceHashMap.put(DataTypeEnum.mysqlBingLog.enumField, new MySqlBinlogStream());
+        streamSourceHashMap.put(DataTypeEnum.kafka.enumField, new KafkaStream());
     }
 
     /**
