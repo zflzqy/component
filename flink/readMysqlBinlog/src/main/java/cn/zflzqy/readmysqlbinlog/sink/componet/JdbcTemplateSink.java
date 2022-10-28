@@ -25,14 +25,14 @@ import java.util.Map;
  * @Date: 2022-07-23-10:57
  * @Description:
  */
-public class JdbcTemplate<IN> extends RichSinkFunction<IN> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcTemplate.class);
+public class JdbcTemplateSink<IN> extends RichSinkFunction<IN> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JdbcTemplateSink.class);
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     /** jdbc事务编程 */
     private TransactionTemplate transactionTemplate;
     private DataBase dataBase;
 
-    public JdbcTemplate(DataBase dataBase) {
+    public JdbcTemplateSink(DataBase dataBase) {
         this.dataBase = dataBase;
     }
 

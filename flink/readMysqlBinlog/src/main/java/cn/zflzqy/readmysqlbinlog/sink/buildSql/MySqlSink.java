@@ -1,8 +1,8 @@
-package cn.zflzqy.readmysqlbinlog.sink.output;
+package cn.zflzqy.readmysqlbinlog.sink.buildSql;
 
 import cn.zflzqy.readmysqlbinlog.db.DataBase;
 import cn.zflzqy.readmysqlbinlog.sink.SinkStrategy;
-import cn.zflzqy.readmysqlbinlog.sink.componet.JdbcTemplate;
+import cn.zflzqy.readmysqlbinlog.sink.componet.JdbcTemplateSink;
 import cn.zflzqy.readmysqlbinlog.sink.enums.OpEnum;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -61,7 +61,7 @@ public class MySqlSink implements SinkStrategy {
                         }
                     })
                     // todo 可以再输出到其他地方
-                    .addSink(new JdbcTemplate(dataBase));
+                    .addSink(new JdbcTemplateSink(dataBase));
         }else {
             for (int j = 0; j < tables.size(); j++) {
                 OutputTag<Object> outputTag = new OutputTag<Object>(StringUtils.join(new String[]{"mysqlSink", ip, String.valueOf(port), dataBaseName}, j, ":")) {
@@ -100,7 +100,7 @@ public class MySqlSink implements SinkStrategy {
                         })
                         .getSideOutput(outputTag)
                         // todo 可以再输出到其他地方
-                        .addSink(new JdbcTemplate(dataBase));
+                        .addSink(new JdbcTemplateSink(dataBase));
 
             }
         }
