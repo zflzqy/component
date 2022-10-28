@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DruidPool {
     private static final Logger LOGGER = LoggerFactory.getLogger(DruidPool.class);
     private static ConcurrentHashMap<Integer, DataSource> dataSources = new ConcurrentHashMap<>(6);
-    private static boolean ex;
 
     // 静态代码块
     public synchronized static void create(DataBase dataBase) {
@@ -56,7 +55,7 @@ public class DruidPool {
     private DruidPool() {
     }
 
-    public static DataSource getDataSource(DataBase dataBase) throws InterruptedException {
+    public static DataSource getDataSource(DataBase dataBase) {
         DataSource dataSource = dataSources.get(dataBase.hashCode());
         if (null == dataSource) {
             create(dataBase);

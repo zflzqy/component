@@ -2,6 +2,7 @@ package cn.zflzqy.readmysqlbinlog.db;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @Author: zfl
@@ -20,4 +21,21 @@ public class DataBase implements Serializable {
     private String password;
     // 数据库名称
     private String databaseName;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DataBase dataBase = (DataBase) o;
+        return Objects.equals(ip, dataBase.ip) && Objects.equals(port, dataBase.port) && Objects.equals(username, dataBase.username) && Objects.equals(password, dataBase.password) && Objects.equals(databaseName, dataBase.databaseName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ip, port, username, password, databaseName);
+    }
 }

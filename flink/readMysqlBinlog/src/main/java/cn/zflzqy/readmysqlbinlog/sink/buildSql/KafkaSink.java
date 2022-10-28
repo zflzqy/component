@@ -1,4 +1,4 @@
-package cn.zflzqy.readmysqlbinlog.sink.output;
+package cn.zflzqy.readmysqlbinlog.sink.buildSql;
 
 import cn.zflzqy.readmysqlbinlog.sink.SinkStrategy;
 import com.alibaba.fastjson2.JSONObject;
