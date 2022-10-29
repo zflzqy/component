@@ -25,6 +25,7 @@ under the License.
     <packaging>jar</packaging>
 
     <name>readMysqlBinlog</name>
+    <description>基于flink-cdc二次开发的数据同步</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
