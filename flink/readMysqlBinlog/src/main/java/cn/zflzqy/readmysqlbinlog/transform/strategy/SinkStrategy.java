@@ -1,4 +1,4 @@
-package cn.zflzqy.readmysqlbinlog.sink;
+package cn.zflzqy.readmysqlbinlog.transform.strategy;
 
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;

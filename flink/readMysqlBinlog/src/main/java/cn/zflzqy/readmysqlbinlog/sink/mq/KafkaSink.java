@@ -1,4 +1,4 @@
-package cn.zflzqy.readmysqlbinlog.sink.componet;
+package cn.zflzqy.readmysqlbinlog.sink.mq;
 
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 

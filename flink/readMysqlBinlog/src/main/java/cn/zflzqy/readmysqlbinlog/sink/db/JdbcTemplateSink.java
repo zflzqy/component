@@ -1,8 +1,8 @@
-package cn.zflzqy.readmysqlbinlog.sink.componet;
+package cn.zflzqy.readmysqlbinlog.sink.db;
 
-import cn.zflzqy.readmysqlbinlog.db.DataBase;
-import cn.zflzqy.readmysqlbinlog.pool.DruidPool;
-import cn.zflzqy.readmysqlbinlog.sink.enums.OpEnum;import com.alibaba.druid.pool.DruidDataSource;
+import cn.zflzqy.readmysqlbinlog.model.db.DataBase;
+import cn.zflzqy.readmysqlbinlog.common.pool.DruidPool;
+import cn.zflzqy.readmysqlbinlog.transform.enums.OpEnum;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.java.tuple.Tuple2;

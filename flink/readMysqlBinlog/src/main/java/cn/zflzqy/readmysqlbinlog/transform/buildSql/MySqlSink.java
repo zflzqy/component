@@ -1,9 +1,9 @@
-package cn.zflzqy.readmysqlbinlog.sink.buildSql;
+package cn.zflzqy.readmysqlbinlog.transform.buildSql;
 
-import cn.zflzqy.readmysqlbinlog.db.DataBase;
-import cn.zflzqy.readmysqlbinlog.sink.SinkStrategy;
-import cn.zflzqy.readmysqlbinlog.sink.componet.JdbcTemplateSink;
-import cn.zflzqy.readmysqlbinlog.sink.enums.OpEnum;
+import cn.zflzqy.readmysqlbinlog.model.db.DataBase;
+import cn.zflzqy.readmysqlbinlog.transform.strategy.SinkStrategy;
+import cn.zflzqy.readmysqlbinlog.sink.db.JdbcTemplateSink;
+import cn.zflzqy.readmysqlbinlog.transform.enums.OpEnum;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +16,6 @@ import org.apache.flink.util.OutputTag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;

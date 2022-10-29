@@ -1,4 +1,4 @@
-package cn.zflzqy.readmysqlbinlog.db;
+package cn.zflzqy.readmysqlbinlog.model.db;
 import lombok.Data;
 
 import java.io.Serializable;
