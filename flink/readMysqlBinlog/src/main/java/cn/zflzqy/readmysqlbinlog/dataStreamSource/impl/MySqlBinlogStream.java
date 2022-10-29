@@ -43,6 +43,14 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
         // 当此为true时包含数据结构，可根据数据结构进行日期的格式化 todo
         JsonDebeziumDeserializationSchema jdd = new JsonDebeziumDeserializationSchema(false, serializerConfig);
 
+        // 构建serverIds范围
+        int offset = Runtime.getRuntime().availableProcessors();
+        int start = SERVER_IDS.incrementAndGet();
+        int end = start;
+        for (int i=0;i<offset;i++){
+            end = SERVER_IDS.incrementAndGet();
+        }
+
         // 获取数据源
         MySqlSource<String> mySqlSource = MySqlSource.<String>builder()
                 .hostname(ip)
@@ -51,7 +59,7 @@ public class MySqlBinlogStream  extends DataStreamSourceFactory {
                 .tableList(dataBaseName+"."+tableName)
                 .username(username)
                 .password(password)
-                .serverId(String.valueOf(SERVER_IDS.incrementAndGet()))
+                .serverId(start+"-"+end)
                 .deserializer(jdd)
                 .build();
 

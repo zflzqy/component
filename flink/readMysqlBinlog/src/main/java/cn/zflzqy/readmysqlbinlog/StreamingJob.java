@@ -51,7 +51,8 @@ public class StreamingJob {
 		// 订阅binlog/kafka,构建连接池，处理数据
 		// 启动监听库：库名：配置信息作为key
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-		env.setParallelism(1);
+		// 获取当前cpu核心作为线程数
+		env.setParallelism(Runtime.getRuntime().availableProcessors());
 		env.enableCheckpointing(3000);
 		// 构建流与映射
 		List<Tuple2<DataStreamSource<String>, JSONArray>> dataStreamSource = DataStreamStrategy.getDataStreamSource(config, env);
