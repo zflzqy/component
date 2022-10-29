@@ -25,6 +25,7 @@ under the License.
     <packaging>jar</packaging>
 
     <name>readMysqlBinlog</name>
+    <description>基于flink-cdc二次开发的数据同步</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -206,7 +207,7 @@ under the License.
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>cn.zflzqy.readmysqlbinlog.StreamingJob</mainClass>
+                                    <mainClass>cn.zflzqy.binlog.StreamingJob</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
