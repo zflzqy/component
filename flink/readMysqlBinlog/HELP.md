@@ -8,6 +8,7 @@
 
 1.配置mapping.json文件，
 mysql实列A同步数据到mysql实例B(该操作未解决实列同步的问题，会有bug，建议不要使用)
+参照如下设置
 
 ```
 [
@@ -15,7 +16,25 @@ mysql实列A同步数据到mysql实例B(该操作未解决实列同步的问题�
     "type": "mysql-binlog",
     "ip":"127.0.0.1",
     "port":3306,
-    "dataBaseName":".*",
+    "dataBaseName":"myapp",
+    "username": "root",
+    "password": "123456",
+    "tableName":".*",
+    "tableMappings": [
+      {
+        "type": "mysql",
+        "ip":"127.0.0.1",
+        "port":3307,
+        "username": "root",
+        "password": "123456"
+      }
+    ]
+  },
+    {
+    "type": "mysql-binlog",
+    "ip":"127.0.0.1",
+    "port":3306,
+    "dataBaseName":"myapp1",
     "username": "root",
     "password": "123456",
     "tableName":".*",
