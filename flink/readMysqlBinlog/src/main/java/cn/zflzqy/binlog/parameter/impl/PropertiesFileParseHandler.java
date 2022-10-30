@@ -24,7 +24,7 @@ public class PropertiesFileParseHandler extends AbstractParameterParseHandler {
             try {
                 propertiesFile = ParameterTool.fromPropertiesFile(configPath);
                 String jsonFromProperties = new PropertiesToJsonConverter().convertToJson(propertiesFile.getProperties());
-                // 需要将propertites转换成可识别的json结构 todo 暂未实现
+                // 需要将properties转换成可识别的json结构 todo 暂未实现
                 return JSON.parseArray(jsonFromProperties);
             } catch (IOException e) {
                 LOGGER.warn("解析配置文件异常：",e);
