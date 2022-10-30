@@ -7,7 +7,7 @@
 2、未开发ddl语句执行，请自行保证库结构一致
 
 1.配置mapping.json文件，
-mysql实列A同步数据到mysql实例
+mysql实列A同步数据到mysql实例B
 
 ```
 [
@@ -23,7 +23,7 @@ mysql实列A同步数据到mysql实例
       {
         "type": "mysql",
         "ip":"127.0.0.1",
-        "port":3306,
+        "port":3307,
         "username": "root",
         "password": "123456"
       }
