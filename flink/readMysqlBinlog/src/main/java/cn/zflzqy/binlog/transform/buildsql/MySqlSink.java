@@ -143,6 +143,7 @@ public class MySqlSink implements SinkStrategy {
                         // 类型
                         String op = data.getString("op");
                         if (StringUtils.isBlank(op)){
+                            LOGGER.info("未获取到操作类型，请确保数据中op字段是：{},{},{},{}",OpEnum.c.name(),OpEnum.d.name(),OpEnum.r.name(),OpEnum.u.name());
                             return;
                         }
                         // 根据类型最终形成sql语句

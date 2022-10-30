@@ -40,6 +40,7 @@ public class MySqlBinlogStream  extends AbstractDataStreamSourceFactory {
         // 解决BigDecimal序列化异常
         Map<String,Object> serializerConfig = new HashMap(1);
         serializerConfig.put(JsonConverterConfig.DECIMAL_FORMAT_CONFIG, DecimalFormat.NUMERIC.name());
+        serializerConfig.put("bigint.unsigned.handling.mode","long");
         // 当此为true时包含数据结构，可根据数据结构进行日期的格式化 todo
         JsonDebeziumDeserializationSchema jdd = new JsonDebeziumDeserializationSchema(false, serializerConfig);
 
@@ -56,7 +57,7 @@ public class MySqlBinlogStream  extends AbstractDataStreamSourceFactory {
                 .hostname(ip)
                 .port(port)
                 .databaseList(dataBaseName)
-                .tableList(dataBaseName+"."+tableName)
+                .tableList(tableName)
                 .username(username)
                 .password(password)
                 .serverId(start+"-"+end)

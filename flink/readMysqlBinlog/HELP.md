@@ -7,7 +7,7 @@
 2、未开发ddl语句执行，请自行保证库结构一致
 
 1.配置mapping.json文件，
-mysql实列A同步数据到mysql实例B
+mysql实列A同步数据到mysql实例B(该操作未解决实列同步的问题，会有bug，建议不要使用)
 
 ```
 [
