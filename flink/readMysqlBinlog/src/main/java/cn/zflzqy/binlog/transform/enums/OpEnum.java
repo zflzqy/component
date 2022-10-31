@@ -2,6 +2,7 @@ package cn.zflzqy.binlog.transform.enums;
 
 import cn.zflzqy.binlog.transform.service.OpService;
 import com.alibaba.fastjson2.JSONObject;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.springframework.util.CollectionUtils;
@@ -101,8 +102,10 @@ public enum OpEnum implements OpService {
                 Iterator<Map.Entry<String, Object>> oldIterator = oldData.entrySet().iterator();
                 while (oldIterator.hasNext()) {
                     Map.Entry<String, Object> entry = oldIterator.next();
-                    whereSql.append("`").append(entry.getKey()).append("` = ? and");
-                    args.add(oldData.get(entry.getKey()));
+                    if (null!=entry.getValue()) {
+                        whereSql.append("`").append(entry.getKey()).append("` = ? and");
+                        args.add(entry.getValue());
+                    }
                 }
 
             }else {
@@ -141,8 +144,10 @@ public enum OpEnum implements OpService {
                 Iterator<Map.Entry<String, Object>> iterator = oldData.entrySet().iterator();
                 while (iterator.hasNext()){
                     Map.Entry<String, Object> next = iterator.next();
-                    args.add(next.getValue());
-                    whereSql.append(" `").append(next.getKey()).append("` =? and");
+                    if (null!=next.getValue()) {
+                        args.add(next.getValue());
+                        whereSql.append(" `").append(next.getKey()).append("` =? and");
+                    }
                 }
                 // 如果没用配置表，就从数据种获取
                 if (StringUtils.isBlank(tableName)) {
