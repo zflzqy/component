@@ -38,7 +38,7 @@ import java.util.List;
  * 从外部配置读取文件信息 同时可以提供多种方式读取外部配置信息，比如http,数据库，文件，以策略模式搞，同时可以考虑不同模式的合并
  * 一个binglo表日志，写入到一个或多个库或表中，支持kafka和mysqlbinlog日志两种方式，以工厂模式构建
  * 入参：-jsonPath c:/mapping.json     -includeDDL  false -includeSchema false
- * todo ddl语句和是否包含结构化信息未完成
+ * todo ddl语句（已完成，待优化）和是否包含结构化信息未完成
  * 参数说明:
  * jsonPath:映射文件
  * includeDDL：是否包含ddl语句，默认false
