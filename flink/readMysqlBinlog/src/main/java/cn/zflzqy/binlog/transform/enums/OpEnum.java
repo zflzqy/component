@@ -2,7 +2,6 @@ package cn.zflzqy.binlog.transform.enums;
 
 import cn.zflzqy.binlog.transform.service.OpService;
 import com.alibaba.fastjson2.JSONObject;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.springframework.util.CollectionUtils;
