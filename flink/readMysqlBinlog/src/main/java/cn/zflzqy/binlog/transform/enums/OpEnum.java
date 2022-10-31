@@ -163,6 +163,15 @@ public enum OpEnum implements OpService {
             LOGGER.info("删除语句：{},参数：{}", rs.f0.toString(),JSONObject.toJSONString(args));
             return sqls;
         }
+    },
+    // ddl语句
+    ddl{
+        @Override
+        public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
+            sqls.add(new Tuple2<>(data.getJSONObject("historyRecord").getString("ddl"),null));
+            return sqls;
+        }
     };
 
     public Tuple2<String, List<Object>> getQuery(JSONObject data, String idField, String tableName, JSONObject tableMapping) {

@@ -52,7 +52,7 @@ mysql实列A同步数据到mysql实例B(该操作未解决实列同步的问题�
 ```
 
 2、同步库A到库B(保证A,B库结构一致)
-
+includeDDL:是否包含ddl语句执行，默认false
 ```
 [
   {
@@ -62,7 +62,8 @@ mysql实列A同步数据到mysql实例B(该操作未解决实列同步的问题�
     "dataBaseName":"myapp",
     "username": "root",
     "password": "123456",
-    "tableName":".*",
+    "tableName":".*",   
+    "includeDDL": true,
     "tableMappings": [
       {
         "type": "mysql",

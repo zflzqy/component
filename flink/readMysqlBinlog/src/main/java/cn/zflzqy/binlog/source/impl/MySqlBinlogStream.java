@@ -59,6 +59,7 @@ public class MySqlBinlogStream  extends AbstractDataStreamSourceFactory {
                 .databaseList(dataBaseName)
                 .tableList(tableName)
                 .username(username)
+                .includeSchemaChanges(config.getBooleanValue("includeDDL",false))
                 .password(password)
                 .serverId(start+"-"+end)
                 .deserializer(jdd)

@@ -143,13 +143,17 @@ public class MySqlSink implements SinkStrategy {
                         // 类型
                         String op = data.getString("op");
                         if (StringUtils.isBlank(op)){
-                            LOGGER.info("未获取到操作类型，请确保数据中op字段是：{},{},{},{}",OpEnum.c.name(),OpEnum.d.name(),OpEnum.r.name(),OpEnum.u.name());
+                            // 尝试获取ddl语句
+                            op = data.getJSONObject("historyRecord").containsKey(OpEnum.ddl.name())?OpEnum.ddl.name():StringUtils.EMPTY;
+                        }
+                        if (StringUtils.isBlank(op)){
+                            LOGGER.info("未获取到操作类型，请确保数据中op字段是：{},{},{},{},{}",OpEnum.c.name(),OpEnum.d.name(),OpEnum.r.name(),OpEnum.u.name(),OpEnum.ddl.name());
                             return;
                         }
                         // 根据类型最终形成sql语句
                         List<Tuple2<String, List<Object>>> sqls = OpEnum.valueOf(op).doOp(data, null,
                                 null,null);
-                        Tuple2<String, List<Tuple2<String, List<Object>>>> rs = new Tuple2<>(data.getString("op"), sqls);
+                        Tuple2<String, List<Tuple2<String, List<Object>>>> rs = new Tuple2<>(op, sqls);
                         if (!CollectionUtils.isEmpty(sqls)) {
                             Tuple2<DataBase, Object> out = new Tuple2<>(newDataBase,rs);
                             collector.collect(out);
