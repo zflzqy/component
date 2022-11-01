@@ -4,14 +4,19 @@ import cn.zflzqy.binlog.source.AbstractDataStreamSourceFactory;
 import com.alibaba.fastjson2.JSONObject;
 import com.ververica.cdc.connectors.mysql.source.MySqlSource;
 import com.ververica.cdc.debezium.JsonDebeziumDeserializationSchema;
+import com.ververica.cdc.debezium.StringDebeziumDeserializationSchema;
+import io.debezium.spi.converter.CustomConverter;
+import io.debezium.spi.converter.RelationalColumn;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.json.DecimalFormat;
 import org.apache.kafka.connect.json.JsonConverterConfig;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -42,7 +47,7 @@ public class MySqlBinlogStream  extends AbstractDataStreamSourceFactory {
         serializerConfig.put(JsonConverterConfig.DECIMAL_FORMAT_CONFIG, DecimalFormat.NUMERIC.name());
         serializerConfig.put("bigint.unsigned.handling.mode","long");
         // 当此为true时包含数据结构，可根据数据结构进行日期的格式化 todo
-        JsonDebeziumDeserializationSchema jdd = new JsonDebeziumDeserializationSchema(false, serializerConfig);
+        JsonDebeziumDeserializationSchema jdd = new JsonDebeziumDeserializationSchema(config.getBooleanValue("includeSchema",false), serializerConfig);
 
         // 构建serverIds范围
         int offset = Runtime.getRuntime().availableProcessors();
@@ -59,6 +64,7 @@ public class MySqlBinlogStream  extends AbstractDataStreamSourceFactory {
                 .databaseList(dataBaseName)
                 .tableList(tableName)
                 .username(username)
+                .includeSchemaChanges(config.getBooleanValue("includeDDL",false))
                 .password(password)
                 .serverId(start+"-"+end)
                 .deserializer(jdd)

@@ -101,8 +101,10 @@ public enum OpEnum implements OpService {
                 Iterator<Map.Entry<String, Object>> oldIterator = oldData.entrySet().iterator();
                 while (oldIterator.hasNext()) {
                     Map.Entry<String, Object> entry = oldIterator.next();
-                    whereSql.append("`").append(entry.getKey()).append("` = ? and");
-                    args.add(oldData.get(entry.getKey()));
+                    if (null!=entry.getValue()) {
+                        whereSql.append("`").append(entry.getKey()).append("` = ? and");
+                        args.add(entry.getValue());
+                    }
                 }
 
             }else {
@@ -141,8 +143,10 @@ public enum OpEnum implements OpService {
                 Iterator<Map.Entry<String, Object>> iterator = oldData.entrySet().iterator();
                 while (iterator.hasNext()){
                     Map.Entry<String, Object> next = iterator.next();
-                    args.add(next.getValue());
-                    whereSql.append(" `").append(next.getKey()).append("` =? and");
+                    if (null!=next.getValue()) {
+                        args.add(next.getValue());
+                        whereSql.append(" `").append(next.getKey()).append("` =? and");
+                    }
                 }
                 // 如果没用配置表，就从数据种获取
                 if (StringUtils.isBlank(tableName)) {
@@ -161,6 +165,15 @@ public enum OpEnum implements OpService {
             Tuple2<String, List<Object>> rs = new Tuple2<>("delete from  `" + tableName+"`"+ StringUtils.removeEnd(whereSql.toString(), "and"), args);
             sqls.add(rs);
             LOGGER.info("删除语句：{},参数：{}", rs.f0.toString(),JSONObject.toJSONString(args));
+            return sqls;
+        }
+    },
+    // ddl语句
+    ddl{
+        @Override
+        public List<Tuple2<String, List<Object>>> doOp(JSONObject data, String idField, String tableName, JSONObject tableMapping) {
+            List<Tuple2<String, List<Object>>> sqls = new ArrayList<>();
+            sqls.add(new Tuple2<>(data.getJSONObject("historyRecord").getString("ddl"),null));
             return sqls;
         }
     };
