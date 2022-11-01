@@ -8,6 +8,7 @@
     "password": "123456",
     "tableName":".*",
     "includeDDL": true,
+    "includeSchema": true,
     "tableMappings": [
       {
         "type": "mysql",
