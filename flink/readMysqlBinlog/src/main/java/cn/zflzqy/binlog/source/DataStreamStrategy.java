@@ -5,6 +5,7 @@ import cn.zflzqy.binlog.source.impl.KafkaStream;
 import cn.zflzqy.binlog.source.impl.MySqlBinlogStream;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import io.debezium.time.MicroTime;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -107,11 +108,10 @@ public class DataStreamStrategy {
                     Date date = DateUtils.addDays(new Date(0), data.getInteger(field));
                     data.put(field, DateFormatUtils.format(date,"yyyy-MM-dd"));
                 }
-            }else if ("io.debezium.time.MicroTime".equals(name)){
-                // todo 待改进
+            }else if ("io.debezium.time.ZonedTimestamp".equals(name)){
                 String field = struct.getString("field");
-                if (null!=data.getLong(field)) {
-                    data.put(field, DateFormatUtils.format(data.getLong(field), DateFormatUtils.ISO_TIME_NO_T_FORMAT.getPattern(),TimeZone.getTimeZone("GMT")));
+                if (null!=data.getDate(field)) {
+                    data.put(field, DateFormatUtils.format(data.getDate(field),"yyyy-MM-dd HH:mm:ss"));
                 }
             }
         }
