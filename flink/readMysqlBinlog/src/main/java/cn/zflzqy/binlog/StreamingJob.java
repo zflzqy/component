@@ -55,8 +55,7 @@ public class StreamingJob {
 		ParameterFactory parameterFactory = new ParameterFactory(args);
 		// 获取解析数据
 		JSONArray config = parameterFactory.getResult();
-		// 订阅binlog/kafka,构建连接池，处理数据
-		// 启动监听库：库名：配置信息作为key
+		// 订阅binlog/kafka,构建连接池，处理数据，启动监听库：库名：配置信息作为key
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		// 获取当前cpu核心作为线程数
 		env.setParallelism(Runtime.getRuntime().availableProcessors());
