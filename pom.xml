@@ -24,7 +24,7 @@
         <shiro.spring.version>1.4.0</shiro.spring.version>
         <shiro.redis.version>3.3.0</shiro.redis.version>
         <spring.web.version>5.3.16</spring.web.version>
-        <spring.webmvc.version>5.0.8.RELEASE</spring.webmvc.version>
+        <spring.webmvc.version>5.2.20.RELEASE</spring.webmvc.version>
         <hutool.version>5.7.22</hutool.version>
         <servlet.api.version>3.1.0</servlet.api.version>
         <disruptor.version>3.4.4</disruptor.version>
