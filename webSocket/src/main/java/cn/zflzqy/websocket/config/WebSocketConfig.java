@@ -42,6 +42,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setApplicationDestinationPrefixes("/app", "/user");
         // 点对点使用的前缀 无需配置 默认/user
         registry.setUserDestinationPrefix("/user");
+        // 保证消息顺序发送
+        registry.setPreservePublishOrder(true);
     }
  
     @Override
