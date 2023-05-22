@@ -1,0 +1,7 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  cn.zflzqy.mysqldatatoes.config.MysqlDataToEsConfig,\
+  cn.zflzqy.shiroclient.config.ShiroServletContainerConfiguration
+
+
+
+
