@@ -8,25 +8,62 @@
         <version>1.0.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <artifactId>mysql-data-to-es</artifactId>
+    <groupId>cn.zflzqy.mysqldatatoes</groupId>
+    <artifactId>mysqlDataToEs</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>mysqlDataToEs</name>
     <description>mysqlDataToEs</description>
-
+    <properties>
+        <java.version>11</java.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+            <version>${spring.boot.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-connector-mysql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.debezium</groupId>
+            <artifactId>debezium-storage-redis</artifactId>
+            <version>${debezium.version}</version>
+        </dependency>
+            <!-- Jedis -->
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>3.7.1</version>
+            </dependency>
 
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.27</version>
+        </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub fightinggg Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/zflzqy/maven-repo</url>
-        </repository>
-    </distributionManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

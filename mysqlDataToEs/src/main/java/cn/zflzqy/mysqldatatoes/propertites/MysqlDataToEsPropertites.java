@@ -1,6 +1,7 @@
 package cn.zflzqy.mysqldatatoes.propertites;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -16,45 +17,89 @@ import org.springframework.util.StringUtils;
 public class MysqlDataToEsPropertites {
     @Autowired
     private DataSourceProperties dataSourceProperties;
+    @Autowired
+    private RedisProperties redisProperties;
 
-    /** 连接地址*/
-    private String url;
+    /** mysql连接地址*/
+    private String mysqlUrl;
     /** 用户名*/
-    private String username;
+    private String mysqlUsername;
     /** 密码*/
-    private String password;
+    private String mysqlPassword;
+
+    /** redis连接地址*/
+    private String redisUrl;
+    /** 密码*/
+    private String redisPassword;
+    /** 数据库*/
+    private Integer redisDatabase;
 
 
-    public String getUrl() {
-        if (!StringUtils.hasText(url)){
+
+
+    public String getMysqlUrl() {
+        if (!StringUtils.hasText(mysqlUrl)){
             return dataSourceProperties.getUrl();
         }
-        return url;
+        return mysqlUrl;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setMysqlUrl(String mysqlUrl) {
+        this.mysqlUrl = mysqlUrl;
     }
 
-    public String getUsername() {
-        if (!StringUtils.hasText(username)){
+    public String getMysqlUsername() {
+        if (!StringUtils.hasText(mysqlUsername)){
             return dataSourceProperties.getUsername();
         }
-        return username;
+        return mysqlUsername;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setMysqlUsername(String mysqlUsername) {
+        this.mysqlUsername = mysqlUsername;
     }
 
-    public String getPassword() {
-        if (!StringUtils.hasText(password)){
+    public String getMysqlPassword() {
+        if (!StringUtils.hasText(mysqlPassword)){
             return dataSourceProperties.getPassword();
         }
-        return password;
+        return mysqlPassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setMysqlPassword(String mysqlPassword) {
+        this.mysqlPassword = mysqlPassword;
+    }
+
+    public String getRedisUrl() {
+        if (!StringUtils.hasText(redisUrl)){
+            return redisProperties.getHost()+redisProperties.getPort();
+        }
+        return redisUrl;
+    }
+
+    public void setRedisUrl(String redisUrl) {
+        this.redisUrl = redisUrl;
+    }
+
+    public String getRedisPassword() {
+        if (!StringUtils.hasText(redisPassword)){
+            return redisProperties.getPassword();
+        }
+        return redisPassword;
+    }
+
+    public void setRedisPassword(String redisPassword) {
+        this.redisPassword = redisPassword;
+    }
+
+    public int getRedisDatabase() {
+        if (redisDatabase!=null){
+            return redisProperties.getDatabase();
+        }
+        return redisDatabase;
+    }
+
+    public void setRedisDatabase(int redisDatabase) {
+        this.redisDatabase = redisDatabase;
     }
 }

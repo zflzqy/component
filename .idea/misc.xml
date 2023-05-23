@@ -5,14 +5,9 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/webSocket/pom.xml" />
-        <option value="$PROJECT_DIR$/shiro-client/pom.xml" />
-        <option value="$PROJECT_DIR$/Async/pom.xml" />
-        <option value="$PROJECT_DIR$/flink/readMysqlBinlog/pom.xml" />
+        <option value="$PROJECT_DIR$/mysqlDataToEs/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/out" />
-  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK" />
 </project>

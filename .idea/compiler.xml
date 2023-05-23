@@ -6,19 +6,21 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="webSocket" />
+        <module name="mysqlDataToEs" />
         <module name="shiro-client" />
-        <module name="Async" />
-        <module name="readMysqlBinlog" />
+        <module name="web-socket" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="mysql-data-to-es" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="Async" options="-parameters" />
-      <module name="readMysqlBinlog" options="" />
+      <module name="mysql-data-to-es" options="-parameters" />
+      <module name="mysqlDataToEs" options="-parameters" />
       <module name="shiro-client" options="-parameters" />
-      <module name="webSocket" options="-parameters" />
+      <module name="web-socket" options="-parameters" />
     </option>
   </component>
 </project>

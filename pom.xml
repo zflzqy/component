@@ -29,6 +29,8 @@
         <hutool.version>5.7.22</hutool.version>
         <servlet.api.version>3.1.0</servlet.api.version>
         <disruptor.version>3.4.4</disruptor.version>
+        <debezium.version>2.2.1.Final</debezium.version>
+        <connectapi.version>2.8.0</connectapi.version>
 
     </properties>
 
@@ -103,6 +105,32 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.debezium</groupId>
+                <artifactId>debezium-connector-mysql</artifactId>
+                <version>${debezium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.debezium</groupId>
+                <artifactId>debezium-embedded</artifactId>
+                <version>${debezium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.debezium</groupId>
+                <artifactId>debezium-api</artifactId>
+                <version>${debezium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.debezium</groupId>
+                <artifactId>debezium-storage-redis</artifactId>
+                <version>${debezium.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>connect-api</artifactId>
+                <version>${connectapi.version}</version> <!-- 替换为你需要的版本号 -->
             </dependency>
         </dependencies>
     </dependencyManagement>
