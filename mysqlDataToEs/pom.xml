@@ -8,8 +8,8 @@
         <version>1.0.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>cn.zflzqy.mysqldatatoes</groupId>
-    <artifactId>mysqlDataToEs</artifactId>
+    <groupId>cn.zflzqy</groupId>
+    <artifactId>mysql-data-to-es</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>mysqlDataToEs</name>
     <description>mysqlDataToEs</description>
@@ -25,14 +25,17 @@
         <dependency>
             <groupId>io.debezium</groupId>
             <artifactId>debezium-connector-mysql</artifactId>
+            <version>${debezium.version}</version>
         </dependency>
         <dependency>
             <groupId>io.debezium</groupId>
             <artifactId>debezium-embedded</artifactId>
+            <version>${debezium.version}</version>
         </dependency>
         <dependency>
             <groupId>io.debezium</groupId>
             <artifactId>debezium-api</artifactId>
+            <version>${debezium.version}</version>
         </dependency>
         <dependency>
             <groupId>io.debezium</groupId>
@@ -57,13 +60,12 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub fightinggg Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/zflzqy/maven-repo</url>
+        </repository>
+    </distributionManagement>
 
 </project>

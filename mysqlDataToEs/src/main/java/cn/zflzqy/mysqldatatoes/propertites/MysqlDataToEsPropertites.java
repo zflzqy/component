@@ -72,7 +72,7 @@ public class MysqlDataToEsPropertites {
 
     public String getRedisUrl() {
         if (!StringUtils.hasText(redisUrl)){
-            return redisProperties.getHost()+redisProperties.getPort();
+            return redisProperties.getHost()+":"+redisProperties.getPort();
         }
         return redisUrl;
     }
