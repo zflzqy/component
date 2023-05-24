@@ -55,9 +55,6 @@ public class DebeziumTest {
         try (DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
                 .using(props)
                 .notifying(record -> {
-
-
-
                     System.out.println(record);
                 }).build()
         ) {
