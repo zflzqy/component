@@ -4,7 +4,9 @@ import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
@@ -89,7 +91,7 @@ public class MysqlDataToEsConfig   {
                             String value = record.value();
                             if (StringUtils.hasText(value)) {
                                 // 创建 Gson 对象
-                                Gson gson = new Gson();
+                                Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create(); ;
                                 // 将字符串转换为 JsonObject
                                 JsonObject jsonObject = gson.fromJson(value, JsonObject.class);
                                 JsonObject payload = jsonObject.getAsJsonObject("payload");
