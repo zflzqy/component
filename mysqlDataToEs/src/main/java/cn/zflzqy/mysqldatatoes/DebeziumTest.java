@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
@@ -35,6 +37,7 @@ public class DebeziumTest {
 //        MemorySchemaHistory
 //        io.debezium.relational.history.MemorySchemaHistory
         props.setProperty("schema.history.internal", "io.debezium.storage.redis.history.RedisSchemaHistory");
+
         props.setProperty("schema.history.internal.redis.address","127.0.0.1:6379");
         props.setProperty("schema.history.internal.redis.password","123456");
         props.setProperty("database.password", "123456");
@@ -44,7 +47,6 @@ public class DebeziumTest {
         //
         props.setProperty("database.include.list","myapp");
         props.setProperty("table.include.list", "myapp.crawler_config");//要捕获的数据表
-
         props.setProperty("database.serverTimezone", "Asia/Shanghai");
         props.setProperty("database.connectionTimeZone", "Asia/Shanghai");
         props.setProperty("database.server.name", "my-app-connector");
@@ -53,6 +55,9 @@ public class DebeziumTest {
         try (DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
                 .using(props)
                 .notifying(record -> {
+
+
+
                     System.out.println(record);
                 }).build()
         ) {

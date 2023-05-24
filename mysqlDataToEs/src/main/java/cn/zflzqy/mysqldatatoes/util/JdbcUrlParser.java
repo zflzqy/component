@@ -1,10 +1,14 @@
 package cn.zflzqy.mysqldatatoes.util;
 
+import org.springframework.util.StringUtils;
+
 import java.util.Properties;
 
 public class JdbcUrlParser {
-
     public static JdbcConnectionInfo parseJdbcUrl(String jdbcUrl) {
+        if (!StringUtils.hasText(jdbcUrl)) {
+            return new JdbcConnectionInfo();
+        }
         JdbcConnectionInfo connectionInfo = new JdbcConnectionInfo();
 
         String host = jdbcUrl.substring(jdbcUrl.indexOf("//") + 2, jdbcUrl.lastIndexOf(":"));
@@ -14,6 +18,11 @@ public class JdbcUrlParser {
         int portEndIndex = jdbcUrl.indexOf("/", portStartIndex);
         int port = Integer.parseInt(jdbcUrl.substring(portStartIndex, portEndIndex));
         connectionInfo.setPort(port);
+
+        int databaseStartIndex = jdbcUrl.indexOf(String.valueOf(port))+String.valueOf(port).length() + 1;
+        int databaseEndIndex = jdbcUrl.indexOf("?", databaseStartIndex);
+        String database = jdbcUrl.substring(databaseStartIndex, databaseEndIndex);
+        connectionInfo.setDatabase(database);
 
         String query = jdbcUrl.substring(jdbcUrl.indexOf("?") + 1);
         Properties properties = new Properties();
@@ -32,6 +41,7 @@ public class JdbcUrlParser {
     public static class JdbcConnectionInfo {
         private String host;
         private int port;
+        private String database;
         private Properties properties;
 
         // Getter and Setter methods
@@ -50,6 +60,14 @@ public class JdbcUrlParser {
 
         public void setPort(int port) {
             this.port = port;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public void setDatabase(String database) {
+            this.database = database;
         }
 
         public Properties getProperties() {

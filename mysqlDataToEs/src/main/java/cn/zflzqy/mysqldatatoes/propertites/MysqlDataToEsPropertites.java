@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -34,8 +35,16 @@ public class MysqlDataToEsPropertites {
     /** 数据库*/
     private Integer redisDatabase;
 
+    /** 扫描包路径*/
+    private String basePackage;
 
+    public String getBasePackage() {
+        return basePackage;
+    }
 
+    public void setBasePackage(String basePackage) {
+        this.basePackage = basePackage;
+    }
 
     public String getMysqlUrl() {
         if (!StringUtils.hasText(mysqlUrl)){
