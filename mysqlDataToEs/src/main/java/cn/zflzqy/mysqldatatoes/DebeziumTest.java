@@ -6,11 +6,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import cn.zflzqy.mysqldatatoes.handler.HandlerService;
+import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
+import org.springframework.util.StringUtils;
 
 /**
  * @version 1.0
@@ -56,6 +61,21 @@ public class DebeziumTest {
                 .using(props)
                 .notifying(record -> {
                     System.out.println(record);
+                    String value = record.value();
+                    if (!StringUtils.hasText(value)) {
+                        return;
+                    }
+                    // 创建 Gson 对象
+                    Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+
+                    // 将字符串转换为 JsonObject
+                    JsonObject jsonObject = gson.fromJson(value, JsonObject.class);
+                    JsonObject payload = jsonObject.getAsJsonObject("payload");
+                    JsonObject source = payload.getAsJsonObject("source");
+                    String table = source.get("table").getAsString();
+                    HandlerService handlerService = new TransDateHandler();
+                    handlerService.execute(jsonObject);
+                    System.out.println(jsonObject.toString());
                 }).build()
         ) {
             // Run the engine asynchronously ...
