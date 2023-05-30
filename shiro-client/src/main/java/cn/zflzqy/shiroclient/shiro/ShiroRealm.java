@@ -14,8 +14,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Description Shiro权限匹配和账号密码匹配
@@ -49,30 +48,29 @@ public class ShiroRealm extends Pac4jRealm {
         Object authoritiesObj = attributes.get("auths");
         if (authoritiesObj != null) {
             // 权限数组
-            String[] authoritiesArr;
+            List<String> authoritiesArr = new ArrayList<>();
             int length;
             int i;
             String authority;
             if (authoritiesObj instanceof String) {
                 // 字符串
-                authoritiesArr = (String[]) StrUtil.split((String) authoritiesObj, ",").toArray();
-                length = authoritiesArr.length;
-
-                for(i = 0; i < length; ++i) {
-                    authority = authoritiesArr[i];
-                    info.addStringPermission(authority);
-                }
+                authoritiesArr = StrUtil.splitTrim((String) authoritiesObj, ",");
             } else if (authoritiesObj instanceof Collection) {
                 // 集合
-                info.addStringPermissions((Collection)authoritiesObj);
+                Collection<Object> collection = (Collection<Object>) authoritiesObj;
+                for (Object obj : collection) {
+                    // 将元素转换为 String 类型
+                    String str = obj.toString();
+                    authoritiesArr.add(str);
+                }
             } else if (authoritiesObj instanceof String[]) {
                 // 字符串数组
-                authoritiesArr = (String[])authoritiesObj;
-                length = authoritiesArr.length;
-                for(i = 0; i < length; ++i) {
-                    authority = authoritiesArr[i];
-                    info.addStringPermission(authority);
-                }
+                authoritiesArr = new ArrayList<>(Arrays.asList((String[])authoritiesObj));
+            }
+            length = authoritiesArr.size();
+            for(i = 0; i < length; ++i) {
+                authority = authoritiesArr.get(i);
+                info.addStringPermission(authority);
             }
         }
 
