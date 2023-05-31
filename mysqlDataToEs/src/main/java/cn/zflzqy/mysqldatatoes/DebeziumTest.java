@@ -53,8 +53,9 @@ public class DebeziumTest {
         //
         props.setProperty("database.include.list","myapp");
         props.setProperty("table.include.list", "myapp.crawler_config");//要捕获的数据表
-        props.setProperty("database.serverTimezone", "Asia/Shanghai");
-        props.setProperty("database.connectionTimeZone", "Asia/Shanghai");
+//        props.setProperty("database.serverTimezone", "Asia/Shanghai");
+        props.setProperty("database.connectionTimeZone", "UTC");
+//        props.setProperty("database.timeZone", "Asia/Shanghai");
         props.setProperty("database.server.name", "my-app-connector");
 
     // Create the engine with this configuration ...

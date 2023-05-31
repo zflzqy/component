@@ -81,54 +81,40 @@ public class TransDateHandler implements HandlerService {
                 // 获取字段名称，根据日期类型进行不同的处理
                 String name = asJsonObject.get("name").getAsString();
                 String field = asJsonObject.get("field").getAsString();
-                // todo 转换时间
+                // todo 转换时间,存在获取的时间戳时区问题
 
                 if (name.equals("io.debezium.time.Date")){
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
                     LocalDate epoch = LocalDate.of(1970, 1, 1);
                     LocalDate today = epoch.plusDays(data.get(field).getAsInt());
                     // 将 LocalDate 转换为 Date
                     Date date = java.sql.Date.valueOf(today);
+
                     data.addProperty(field, dateFormat.format(date));
                 }else if (name.equals("io.debezium.time.MicroTime")){
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
                     Date date = new Date(data.get(field).getAsLong()/1000);
-                    // 创建一个 Calendar 对象，并设置时间为 Date 对象的值
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(date);
-                    // 将 Calendar 对象的时间向后偏移8小时
-                    calendar.add(Calendar.HOUR_OF_DAY, -8);
-                    // 获取偏移后的时间
-                    Date offsetDate = calendar.getTime();
-                    data.addProperty(field, dateFormat.format(offsetDate));
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    data.addProperty(field, dateFormat.format(date));
 
                 }else if (name.equals("io.debezium.time.Timestamp")){
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     Date date = new Date(data.get(field).getAsLong());
-                    // 创建一个 Calendar 对象，并设置时间为 Date 对象的值
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(date);
-                    // 将 Calendar 对象的时间向后偏移8小时
-                    calendar.add(Calendar.HOUR_OF_DAY, -8);
-                    // 获取偏移后的时间
-                    Date offsetDate = calendar.getTime();
+
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
 
-                    data.addProperty(field, dateFormat.format(offsetDate));
+                    data.addProperty(field, dateFormat.format(date));
 
                 }else if (name.equals("io.debezium.time.MicroTimestamp")) {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
                     Date date = new Date(data.get(field).getAsLong()/1000);
-                    // 创建一个 Calendar 对象，并设置时间为 Date 对象的值
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(date);
-                    // 将 Calendar 对象的时间向后偏移8小时
-                    calendar.add(Calendar.HOUR_OF_DAY, -8);
-                    // 获取偏移后的时间
-                    Date offsetDate = calendar.getTime();
-                    data.addProperty(field, dateFormat.format(offsetDate));
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    data.addProperty(field, dateFormat.format(date));
                 }
 
             }
