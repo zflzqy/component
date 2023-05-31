@@ -3,10 +3,14 @@ package cn.zflzqy.mysqldatatoes.handler;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.apache.http.client.utils.DateUtils;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 
 /**
@@ -88,20 +92,43 @@ public class TransDateHandler implements HandlerService {
                     data.addProperty(field, dateFormat.format(date));
                 }else if (name.equals("io.debezium.time.MicroTime")){
 
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
                     Date date = new Date(data.get(field).getAsLong()/1000);
-                    data.addProperty(field, dateFormat.format(date));
+                    // 创建一个 Calendar 对象，并设置时间为 Date 对象的值
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    // 将 Calendar 对象的时间向后偏移8小时
+                    calendar.add(Calendar.HOUR_OF_DAY, -8);
+                    // 获取偏移后的时间
+                    Date offsetDate = calendar.getTime();
+                    data.addProperty(field, dateFormat.format(offsetDate));
 
                 }else if (name.equals("io.debezium.time.Timestamp")){
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     Date date = new Date(data.get(field).getAsLong());
-                    data.addProperty(field, dateFormat.format(date));
+                    // 创建一个 Calendar 对象，并设置时间为 Date 对象的值
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    // 将 Calendar 对象的时间向后偏移8小时
+                    calendar.add(Calendar.HOUR_OF_DAY, -8);
+                    // 获取偏移后的时间
+                    Date offsetDate = calendar.getTime();
+
+
+                    data.addProperty(field, dateFormat.format(offsetDate));
 
                 }else if (name.equals("io.debezium.time.MicroTimestamp")) {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
                     Date date = new Date(data.get(field).getAsLong()/1000);
-                    data.addProperty(field, dateFormat.format(date));
+                    // 创建一个 Calendar 对象，并设置时间为 Date 对象的值
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(date);
+                    // 将 Calendar 对象的时间向后偏移8小时
+                    calendar.add(Calendar.HOUR_OF_DAY, -8);
+                    // 获取偏移后的时间
+                    Date offsetDate = calendar.getTime();
+                    data.addProperty(field, dateFormat.format(offsetDate));
                 }
 
             }

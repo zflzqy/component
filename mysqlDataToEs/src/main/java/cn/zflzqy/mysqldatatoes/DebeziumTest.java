@@ -1,6 +1,7 @@
 package cn.zflzqy.mysqldatatoes;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -72,7 +73,6 @@ public class DebeziumTest {
                     JsonObject jsonObject = gson.fromJson(value, JsonObject.class);
                     JsonObject payload = jsonObject.getAsJsonObject("payload");
                     JsonObject source = payload.getAsJsonObject("source");
-                    String table = source.get("table").getAsString();
                     HandlerService handlerService = new TransDateHandler();
                     handlerService.execute(jsonObject);
                     System.out.println(jsonObject.toString());
