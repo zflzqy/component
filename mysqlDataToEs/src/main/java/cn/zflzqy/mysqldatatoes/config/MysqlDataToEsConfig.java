@@ -91,8 +91,7 @@ public class MysqlDataToEsConfig {
                     .using(props)
                     .notifying(record -> {
                         try {
-                            // todo 处理数据，推送到es
-                            // 处理日期https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-temporal-types
+                            // 处理数据，推送到es
                             String value = record.value();
                             if (!StringUtils.hasText(value)) {
                                 log.warn("没有数据value的值");

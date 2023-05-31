@@ -10,7 +10,7 @@
     </parent>
     <groupId>cn.zflzqy</groupId>
     <artifactId>mysql-data-to-es</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>mysqlDataToEs</name>
     <description>mysqlDataToEs</description>
     <properties>

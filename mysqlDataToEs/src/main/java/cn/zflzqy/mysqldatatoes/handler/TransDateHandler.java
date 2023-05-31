@@ -81,7 +81,6 @@ public class TransDateHandler implements HandlerService {
                 // 获取字段名称，根据日期类型进行不同的处理
                 String name = asJsonObject.get("name").getAsString();
                 String field = asJsonObject.get("field").getAsString();
-                // todo 转换时间,存在获取的时间戳时区问题
 
                 if (name.equals("io.debezium.time.Date")){
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
