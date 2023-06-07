@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import cn.zflzqy.mysqldatatoes.execute.Execute;
 import cn.zflzqy.mysqldatatoes.handler.HandlerService;
 import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
 import com.google.gson.FieldNamingPolicy;
@@ -57,6 +58,7 @@ public class DebeziumTest {
         props.setProperty("database.connectionTimeZone", "UTC");
 //        props.setProperty("database.timeZone", "Asia/Shanghai");
         props.setProperty("database.server.name", "my-app-connector");
+        Execute execute = new Execute();
 
     // Create the engine with this configuration ...
         try (DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)
@@ -74,8 +76,12 @@ public class DebeziumTest {
                     JsonObject jsonObject = gson.fromJson(value, JsonObject.class);
                     JsonObject payload = jsonObject.getAsJsonObject("payload");
                     JsonObject source = payload.getAsJsonObject("source");
-                    HandlerService handlerService = new TransDateHandler();
-                    handlerService.execute(jsonObject);
+                    try {
+
+                        execute.execute(jsonObject);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
                     System.out.println(jsonObject.toString());
                 }).build()
         ) {

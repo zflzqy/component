@@ -6,6 +6,7 @@ import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
+import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -66,16 +68,14 @@ public class MysqlDataToEsConfig {
         props.setProperty("schema.history.internal.redis.address", mysqlDataToEsPropertites.getRedisUrl());
         props.setProperty("schema.history.internal.redis.password", mysqlDataToEsPropertites.getRedisPassword());
         props.setProperty("topic.prefix", "my-app-connector");
+        props.setProperty("decimal.handling.mode","string");
         // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题 todo
         props.setProperty("database.server.id", "185744");
 
         props.setProperty("database.include.list", jdbcConnectionInfo.getDatabase());
         // 要捕获的数据表
         props.setProperty("table.include.list", jdbcConnectionInfo.getDatabase() + ".*");
-        props.setProperty("time.precision.mode", "connect");
-
-        props.setProperty("database.serverTimezone", "Asia/Shanghai");
-        props.setProperty("database.connectionTimeZone", "Asia/Shanghai");
+        props.setProperty("database.connectionTimeZone", "UTC");
         props.setProperty("database.server.name", "my-app-connector");
 
         // 扫描实体
@@ -98,7 +98,10 @@ public class MysqlDataToEsConfig {
                                 return;
                             }
                             // 创建 Gson 对象
-                            Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+                            GsonBuilder gsonBuilder = new GsonBuilder();
+                            gsonBuilder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
+                            gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer());
+                            Gson gson = gsonBuilder.create();
 
                             // 将字符串转换为 JsonObject
                             JsonObject jsonObject = gson.fromJson(value, JsonObject.class);

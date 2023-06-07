@@ -2,8 +2,10 @@ package cn.zflzqy.mysqldatatoes.handler;
 
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.http.client.utils.DateUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -82,6 +84,10 @@ public class TransDateHandler implements HandlerService {
                 String name = asJsonObject.get("name").getAsString();
                 String field = asJsonObject.get("field").getAsString();
 
+                if (ObjectUtils.isEmpty(data.get(field))||data.get(field).isJsonNull()){
+                    continue;
+                }
+
                 if (name.equals("io.debezium.time.Date")){
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -90,7 +96,6 @@ public class TransDateHandler implements HandlerService {
                     LocalDate today = epoch.plusDays(data.get(field).getAsInt());
                     // 将 LocalDate 转换为 Date
                     Date date = java.sql.Date.valueOf(today);
-
                     data.addProperty(field, dateFormat.format(date));
                 }else if (name.equals("io.debezium.time.MicroTime")){
 
