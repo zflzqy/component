@@ -1,16 +1,13 @@
 package cn.zflzqy.mysqldatatoes.handler;
 
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import org.apache.http.client.utils.DateUtils;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -23,102 +20,86 @@ import java.util.TimeZone;
 public class TransDateHandler implements HandlerService {
 
     @Override
-    public void execute(JsonObject jsonObject) {
-        JsonObject payload = jsonObject.getAsJsonObject("payload");
-        JsonObject source = payload.getAsJsonObject("source");
-        if (!jsonObject.has("schema")){
+    public void execute(JSONObject jsonObject) {
+        JSONObject payload = jsonObject.getJSONObject("payload");
+        JSONObject source = payload.getJSONObject("source");
+        if (!jsonObject.containsKey("schema")){
             return;
         }
-        JsonObject schema = jsonObject.getAsJsonObject("schema");
-        if (!schema.has("fields")){
+        JSONObject schema = jsonObject.getJSONObject("schema");
+        if (!schema.containsKey("fields")){
             return;
         }
-        JsonArray fields = schema.getAsJsonArray("fields");
-        if (!payload.has("op")){
+        JSONArray fields = schema.getJSONArray("fields");
+        if (!payload.containsKey("op")){
             return;
         }
 
-        OpEnum opEnum = OpEnum.valueOf(payload.get("op").getAsString());
+        OpEnum opEnum = OpEnum.valueOf(payload.getString("op"));
         // 根据不同的crud类型返回不同的数据
         switch (opEnum){
             case r:
                 for (int i = 0; i < fields.size(); i++){
-                    JsonObject asJsonObject = fields.get(i).getAsJsonObject();
-                    if (asJsonObject.get("field").getAsString().equals("after")){
-                        deal(payload.getAsJsonObject("after"),asJsonObject.getAsJsonArray("fields"));
+                    JSONObject asJsonObject = fields.getJSONObject(i);
+                    if ("after".equals(asJsonObject.getString("field"))){
+                        deal(payload.getJSONObject("after"),asJsonObject.getJSONArray("fields"));
                     }
                 }
                 break;
             case c:
                 for (int i = 0; i < fields.size(); i++){
-                    JsonObject asJsonObject = fields.get(i).getAsJsonObject();
-                    if (asJsonObject.get("field").getAsString().equals("after")){
-                        deal(payload.getAsJsonObject("after"),asJsonObject.getAsJsonArray("fields"));
+                    JSONObject asJsonObject = fields.getJSONObject(i);
+                    if ("after".equals(asJsonObject.getString("field"))){
+                        deal(payload.getJSONObject("after"),asJsonObject.getJSONArray("fields"));
                     }
                 }
                 break;
             case u:
                 for (int i = 0; i < fields.size(); i++){
-                    JsonObject asJsonObject = fields.get(i).getAsJsonObject();
-                    if (asJsonObject.get("field").getAsString().equals("after")){
-                        deal(payload.getAsJsonObject("after"),asJsonObject.getAsJsonArray("fields"));
+                    JSONObject asJsonObject = fields.getJSONObject(i);
+                    if ("after".equals(asJsonObject.getString("field"))){
+                        deal(payload.getJSONObject("after"),asJsonObject.getJSONArray("fields"));
                     }
                 }
                 break;
             case d:
                 for (int i = 0; i < fields.size(); i++){
-                    JsonObject asJsonObject = fields.get(i).getAsJsonObject();
-                    if (asJsonObject.get("field").getAsString().equals("before")){
-                        deal(payload.getAsJsonObject("before"),asJsonObject.getAsJsonArray("fields"));
+                    JSONObject asJsonObject = fields.getJSONObject(i);
+                    if ("before".equals(asJsonObject.getString("field"))){
+                        deal(payload.getJSONObject("before"),asJsonObject.getJSONArray("fields"));
                     }
                 }
 //                elasticsearchRestTemplate.delete(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
             default:
         }
     }
-    public void deal(JsonObject data,JsonArray fields){
+    public void deal(JSONObject data,JSONArray fields){
         for (int i = 0; i < fields.size(); i++){
-            JsonObject asJsonObject = fields.get(i).getAsJsonObject();
-            if (asJsonObject.has("name")) {
+            JSONObject asJsonObject = fields.getJSONObject(i);
+            if (asJsonObject.containsKey("name")) {
                 // 获取字段名称，根据日期类型进行不同的处理
-                String name = asJsonObject.get("name").getAsString();
-                String field = asJsonObject.get("field").getAsString();
-
-                if (ObjectUtils.isEmpty(data.get(field))||data.get(field).isJsonNull()){
+                String name = asJsonObject.getString("name");
+                String field = asJsonObject.getString("field");
+                if (!StringUtils.hasText(field)|| ObjectUtils.isEmpty(data.get(field))){
                     continue;
                 }
 
                 if (name.equals("io.debezium.time.Date")){
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
                     LocalDate epoch = LocalDate.of(1970, 1, 1);
-                    LocalDate today = epoch.plusDays(data.get(field).getAsInt());
+                    LocalDate today = epoch.plusDays(data.getInteger(field));
                     // 将 LocalDate 转换为 Date
                     Date date = java.sql.Date.valueOf(today);
-                    data.addProperty(field, dateFormat.format(date));
+                    data.put(field, date);
                 }else if (name.equals("io.debezium.time.MicroTime")){
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-                    Date date = new Date(data.get(field).getAsLong()/1000);
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    data.addProperty(field, dateFormat.format(date));
-
+                    Date date = new Date(data.getLong(field)/1000);
+                    data.put(field, date);
                 }else if (name.equals("io.debezium.time.Timestamp")){
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    Date date = new Date(data.get(field).getAsLong());
-
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-
-                    data.addProperty(field, dateFormat.format(date));
+                    Date date = new Date(data.getLong(field));
+                    data.put(field, date);
 
                 }else if (name.equals("io.debezium.time.MicroTimestamp")) {
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-                    Date date = new Date(data.get(field).getAsLong()/1000);
-                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    data.addProperty(field, dateFormat.format(date));
+                    Date date = new Date(data.getLong(field)/1000);
+                    data.put(field, date);
                 }
 
             }

@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import cn.zflzqy.mysqldatatoes.execute.Execute;
 import cn.zflzqy.mysqldatatoes.handler.HandlerService;
 import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -69,13 +70,11 @@ public class DebeziumTest {
                     if (!StringUtils.hasText(value)) {
                         return;
                     }
-                    // 创建 Gson 对象
-                    Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
-
                     // 将字符串转换为 JsonObject
-                    JsonObject jsonObject = gson.fromJson(value, JsonObject.class);
-                    JsonObject payload = jsonObject.getAsJsonObject("payload");
-                    JsonObject source = payload.getAsJsonObject("source");
+                    JSONObject jsonObject = JSONObject.parseObject(value);
+                    JSONObject payload = jsonObject.getJSONObject("payload");
+                    JSONObject source = payload.getJSONObject("source");
+                    String table = source.getString("table");
                     try {
 
                         execute.execute(jsonObject);

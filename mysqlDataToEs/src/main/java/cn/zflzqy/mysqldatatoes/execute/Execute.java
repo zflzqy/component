@@ -2,6 +2,7 @@ package cn.zflzqy.mysqldatatoes.execute;
 
 import cn.zflzqy.mysqldatatoes.handler.HandlerService;
 import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
 
 import java.util.LinkedList;
@@ -20,9 +21,9 @@ public class Execute {
 
     public Execute() {}
 
-    public void execute(JsonObject gson){
+    public void execute(JSONObject jsonObject){
         for (HandlerService handlerService : handlerServices){
-            handlerService.execute(gson);
+            handlerService.execute(jsonObject);
         }
     }
 

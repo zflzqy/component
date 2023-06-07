@@ -31,6 +31,7 @@
         <disruptor.version>3.4.4</disruptor.version>
         <debezium.version>2.2.1.Final</debezium.version>
         <connectapi.version>2.8.0</connectapi.version>
+        <fastjson.version>2.0.8</fastjson.version>
 
     </properties>
 
@@ -131,6 +132,11 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>connect-api</artifactId>
                 <version>${connectapi.version}</version> <!-- 替换为你需要的版本号 -->
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

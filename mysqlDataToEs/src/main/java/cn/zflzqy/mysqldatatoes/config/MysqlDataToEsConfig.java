@@ -6,6 +6,7 @@ import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -97,19 +98,14 @@ public class MysqlDataToEsConfig {
                                 log.warn("没有数据value的值");
                                 return;
                             }
-                            // 创建 Gson 对象
-                            GsonBuilder gsonBuilder = new GsonBuilder();
-                            gsonBuilder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
-                            gsonBuilder.registerTypeAdapter(Date.class, new DateDeserializer());
-                            Gson gson = gsonBuilder.create();
 
                             // 将字符串转换为 JsonObject
-                            JsonObject jsonObject = gson.fromJson(value, JsonObject.class);
-                            JsonObject payload = jsonObject.getAsJsonObject("payload");
-                            JsonObject source = payload.getAsJsonObject("source");
-                            String table = source.get("table").getAsString();
+                            JSONObject jsonObject = JSONObject.parseObject(value);
+                            JSONObject payload = jsonObject.getJSONObject("payload");
+                            JSONObject source = payload.getJSONObject("source");
+                            String table = source.getString("table");
                             if (!indexs.containsKey(table)) {
-                                log.warn("未配置{}的索引实体，跳过", table);
+                                log.info("未配置{}的索引实体，跳过", table);
                                 return;
                             }
 
@@ -120,22 +116,20 @@ public class MysqlDataToEsConfig {
                             }
                             // 处理数据
                             execute.execute(jsonObject);
-                            OpEnum opEnum = OpEnum.valueOf(payload.get("op").getAsString());
+                            OpEnum opEnum = OpEnum.valueOf(payload.getString("op"));
                             // 根据不同的crud类型返回不同的数据
                             switch (opEnum) {
                                 case r:
-                                    elasticsearchRestTemplate.delete(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
-                                    elasticsearchRestTemplate.save(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
+                                    elasticsearchRestTemplate.save(payload.getObject("after",indexs.get(table)));
                                     break;
                                 case c:
-                                    elasticsearchRestTemplate.save(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
+                                    elasticsearchRestTemplate.save(payload.getObject("after",indexs.get(table)));
                                     break;
                                 case u:
-                                    elasticsearchRestTemplate.delete(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
-                                    elasticsearchRestTemplate.save(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
+                                    elasticsearchRestTemplate.save(payload.getObject("after",indexs.get(table)));
                                     break;
                                 case d:
-                                    elasticsearchRestTemplate.delete(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
+                                    elasticsearchRestTemplate.delete(payload.getObject("after",indexs.get(table)));
                                 default:
                             }
 

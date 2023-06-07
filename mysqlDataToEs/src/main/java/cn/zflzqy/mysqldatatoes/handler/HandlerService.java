@@ -1,5 +1,6 @@
 package cn.zflzqy.mysqldatatoes.handler;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
@@ -9,5 +10,5 @@ import com.google.gson.JsonObject;
  * @Description:
  */
 public interface HandlerService {
-    public void execute(JsonObject gson);
+    public void execute(JSONObject jsonObject);
 }
