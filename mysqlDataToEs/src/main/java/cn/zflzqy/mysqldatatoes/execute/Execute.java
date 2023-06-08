@@ -14,11 +14,9 @@ import java.util.LinkedList;
  */
 public class Execute {
     private static LinkedList<HandlerService> handlerServices = new LinkedList<>();
-
     static {
-        handlerServices.add(new TransDateHandler());
+        HandlerService.register(new TransDateHandler());
     }
-
     public Execute() {}
 
     public void execute(JSONObject jsonObject){

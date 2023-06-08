@@ -7,11 +7,7 @@ import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
@@ -21,12 +17,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
+import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.mapping.ElasticsearchPersistentEntity;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -46,6 +46,8 @@ public class MysqlDataToEsConfig {
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Autowired
+    private ElasticsearchConverter elasticsearchConverter;
 
     @PostConstruct
     public void start() throws Exception {
@@ -117,12 +119,28 @@ public class MysqlDataToEsConfig {
                             // 处理数据
                             execute.execute(jsonObject);
                             OpEnum opEnum = OpEnum.valueOf(payload.getString("op"));
+                            IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(indexs.get(table));
+                            ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.
+                                    getMappingContext().getPersistentEntity(indexs.get(table));
+                            String idPropertyName = persistentEntity.getIdProperty().getName();
+
                             // 根据不同的crud类型返回不同的数据
                             switch (opEnum) {
                                 case r:
                                 case c:
+                                    IndexQuery indexQuery = new IndexQuery();
+                                    indexQuery.setId(payload.getJSONObject("after").getString(idPropertyName));
+                                    indexQuery.setSource(payload.getJSONObject("after").toString(SerializerFeature.WriteDateUseDateFormat));
+                                    elasticsearchRestTemplate.index(indexQuery,indexCoordinates);
+                                    break;
                                 case u:
-                                    elasticsearchRestTemplate.save(payload.getObject("after",indexs.get(table)));
+                                    UpdateQuery updateQuery = UpdateQuery.builder(payload.getJSONObject("after").getString(idPropertyName))
+                                            .withDocAsUpsert(true)
+                                            .withDocument(Document.parse(payload.getJSONObject("after").toString(SerializerFeature.WriteDateUseDateFormat)))
+                                            .build();
+
+
+                                    elasticsearchRestTemplate.update(updateQuery,indexCoordinates);
                                     break;
                                 case d:
                                     elasticsearchRestTemplate.delete(payload.getObject("before",indexs.get(table)));
