@@ -14,5 +14,5 @@ public interface HandlerService {
     public static void register(HandlerService handlerService){
         Execute.getHandlerServices().add(handlerService);
     }
-    public void execute(JSONObject jsonObject);
+    public void execute(JSONObject jsonObject,Class aclass);
 }

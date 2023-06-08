@@ -117,7 +117,7 @@ public class MysqlDataToEsConfig {
                                 elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
                             }
                             // 处理数据
-                            execute.execute(jsonObject);
+                            execute.execute(jsonObject,indexs.get(table));
                             OpEnum opEnum = OpEnum.valueOf(payload.getString("op"));
                             IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(indexs.get(table));
                             ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.

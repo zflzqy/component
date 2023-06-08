@@ -19,9 +19,9 @@ public class Execute {
     }
     public Execute() {}
 
-    public void execute(JSONObject jsonObject){
+    public void execute(JSONObject jsonObject,Class asClass){
         for (HandlerService handlerService : handlerServices){
-            handlerService.execute(jsonObject);
+            handlerService.execute(jsonObject,asClass);
         }
     }
 

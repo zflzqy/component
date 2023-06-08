@@ -20,7 +20,7 @@ import java.util.TimeZone;
 public class TransDateHandler implements HandlerService {
 
     @Override
-    public void execute(JSONObject jsonObject) {
+    public void execute(JSONObject jsonObject,Class asClass)  {
         JSONObject payload = jsonObject.getJSONObject("payload");
         JSONObject source = payload.getJSONObject("source");
         if (!jsonObject.containsKey("schema")){

@@ -77,7 +77,7 @@ public class DebeziumTest {
                     String table = source.getString("table");
                     try {
 
-                        execute.execute(jsonObject);
+                        execute.execute(jsonObject,DebeziumTest.class);
                     }catch (Exception e){
                         e.printStackTrace();
                     }
