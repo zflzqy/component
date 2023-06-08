@@ -28,9 +28,9 @@ public class ElasticsearchQuery {
 
         try {
             // 构建查询请求
-            SearchRequest searchRequest = new SearchRequest("t_plot", "t_base");
+            SearchRequest searchRequest = new SearchRequest( "t_base");
             SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-            sourceBuilder.query(QueryBuilders.multiMatchQuery("名称", "*"));
+            sourceBuilder.query(QueryBuilders.multiMatchQuery("谷物", "*"));
 
             // 添加高亮查询
             HighlightBuilder highlightBuilder = new HighlightBuilder();

@@ -74,7 +74,6 @@ public class MysqlDataToEsConfig {
         props.setProperty("decimal.handling.mode","string");
         // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题 todo
         props.setProperty("database.server.id", "185744");
-
         props.setProperty("database.include.list", jdbcConnectionInfo.getDatabase());
         // 要捕获的数据表
         props.setProperty("table.include.list", jdbcConnectionInfo.getDatabase() + ".*");
