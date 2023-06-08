@@ -39,21 +39,7 @@ public class TransDateHandler implements HandlerService {
         // 根据不同的crud类型返回不同的数据
         switch (opEnum){
             case r:
-                for (int i = 0; i < fields.size(); i++){
-                    JSONObject asJsonObject = fields.getJSONObject(i);
-                    if ("after".equals(asJsonObject.getString("field"))){
-                        deal(payload.getJSONObject("after"),asJsonObject.getJSONArray("fields"));
-                    }
-                }
-                break;
             case c:
-                for (int i = 0; i < fields.size(); i++){
-                    JSONObject asJsonObject = fields.getJSONObject(i);
-                    if ("after".equals(asJsonObject.getString("field"))){
-                        deal(payload.getJSONObject("after"),asJsonObject.getJSONArray("fields"));
-                    }
-                }
-                break;
             case u:
                 for (int i = 0; i < fields.size(); i++){
                     JSONObject asJsonObject = fields.getJSONObject(i);

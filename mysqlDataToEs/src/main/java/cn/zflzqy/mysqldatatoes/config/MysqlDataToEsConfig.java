@@ -120,16 +120,12 @@ public class MysqlDataToEsConfig {
                             // 根据不同的crud类型返回不同的数据
                             switch (opEnum) {
                                 case r:
-                                    elasticsearchRestTemplate.save(payload.getObject("after",indexs.get(table)));
-                                    break;
                                 case c:
-                                    elasticsearchRestTemplate.save(payload.getObject("after",indexs.get(table)));
-                                    break;
                                 case u:
                                     elasticsearchRestTemplate.save(payload.getObject("after",indexs.get(table)));
                                     break;
                                 case d:
-                                    elasticsearchRestTemplate.delete(payload.getObject("after",indexs.get(table)));
+                                    elasticsearchRestTemplate.delete(payload.getObject("before",indexs.get(table)));
                                 default:
                             }
 
