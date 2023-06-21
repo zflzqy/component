@@ -1,24 +1,14 @@
-package cn.zflzqy.mysqldatatoes;
-
 import java.io.IOException;
-import java.time.ZoneOffset;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import cn.zflzqy.mysqldatatoes.execute.Execute;
-import cn.zflzqy.mysqldatatoes.handler.HandlerService;
-import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
-import io.debezium.storage.redis.history.RedisSchemaHistory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -55,8 +45,8 @@ public class DebeziumTest {
         // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题 todo
         props.setProperty("database.server.id", "85744");
         //
-        props.setProperty("database.include.list","traceability");
-        props.setProperty("table.include.list", ".*");//要捕获的数据表
+        props.setProperty("database.include.list","myapp");
+        props.setProperty("table.include.list", "fail_crawler_log");//要捕获的数据表
 //        props.setProperty("database.serverTimezone", "Asia/Shanghai");
         props.setProperty("database.connectionTimeZone", "UTC");
 //        props.setProperty("database.timeZone", "Asia/Shanghai");

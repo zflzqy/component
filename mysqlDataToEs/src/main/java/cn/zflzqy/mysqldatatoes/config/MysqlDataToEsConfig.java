@@ -35,6 +35,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableConfigurationProperties(MysqlDataToEsPropertites.class)
 public class MysqlDataToEsConfig {
 
+
     private static final Logger log = LoggerFactory.getLogger(MysqlDataToEsConfig.class);
 
     private static DebeziumEngine<ChangeEvent<String, String>> engine;
@@ -49,48 +50,20 @@ public class MysqlDataToEsConfig {
     @Autowired
     private ElasticsearchConverter elasticsearchConverter;
 
-    @PostConstruct
-    public void start() throws Exception {
-        // 定义mysql连接
-        final Properties props = new Properties();
-        props.setProperty("name", "engine");
-        props.setProperty("connector.class", "io.debezium.connector.mysql.MySqlConnector");
-        // redis记录偏移量
-        props.setProperty("offset.storage", "io.debezium.storage.redis.offset.RedisOffsetBackingStore");
-        props.setProperty("offset.storage.redis.address", mysqlDataToEsPropertites.getRedisUrl());
-        props.setProperty("offset.storage.redis.password", mysqlDataToEsPropertites.getRedisPassword());
-        props.setProperty("offset.flush.interval.ms", "60000");
 
-        /* 设置属性信息*/
-        JdbcUrlParser.JdbcConnectionInfo jdbcConnectionInfo = JdbcUrlParser.parseJdbcUrl(mysqlDataToEsPropertites.getMysqlUrl());
-        props.setProperty("database.hostname", jdbcConnectionInfo.getHost());
-        props.setProperty("database.port", String.valueOf(jdbcConnectionInfo.getPort()));
-        props.setProperty("database.user", mysqlDataToEsPropertites.getMysqlUsername());
-        props.setProperty("database.password", mysqlDataToEsPropertites.getMysqlPassword());
-        props.setProperty("database.history.store.only.monitored.tables.ddl.events","false");
-        props.setProperty("schema.history.internal", "io.debezium.storage.redis.history.RedisSchemaHistory");
-        props.setProperty("schema.history.internal.redis.address", mysqlDataToEsPropertites.getRedisUrl());
-        props.setProperty("schema.history.internal.redis.password", mysqlDataToEsPropertites.getRedisPassword());
-        props.setProperty("topic.prefix", "my-app-connector");
-        props.setProperty("snapshot.mode", "never");
-        props.setProperty("database.history.store.only.monitored.tables.ddl.events", "false");
-        props.setProperty("database.history.skip.unparseable.ddl", "true");
-        props.setProperty("decimal.handling.mode","string");
-        // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题 todo
-        props.setProperty("database.server.id", "185744");
-        props.setProperty("database.include.list", jdbcConnectionInfo.getDatabase());
-        // 要捕获的数据表
-        props.setProperty("table.include.list", jdbcConnectionInfo.getDatabase() + ".*");
-        props.setProperty("database.connectionTimeZone", "UTC");
-        props.setProperty("database.server.name", "my-app-connector");
+    @PostConstruct
+    public void start() {
+        // 构建执行参数
+        Properties props = buildPropertites();
 
         // 扫描实体
-        PackageScan.scanEntities(mysqlDataToEsPropertites.getBasePackage());
+        PackageScan.scanEntities(StringUtils.hasText(mysqlDataToEsPropertites.getBasePackage())?
+                mysqlDataToEsPropertites.getBasePackage():
+                PackagePathResolver.mainClassPackagePath);
         Map<String, Class> indexs = PackageScan.getIndexs();
 
         // 数据处理执行类
         Execute execute = new Execute();
-
         // 创建engine
         try {
             engine = DebeziumEngine.create(Json.class)
@@ -119,9 +92,14 @@ public class MysqlDataToEsConfig {
                             if (!exists) {
                                 elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
                             }
+
                             // 处理数据
                             execute.execute(jsonObject,indexs.get(table));
+
+                            // 获取操作类型
                             OpEnum opEnum = OpEnum.valueOf(payload.getString("op"));
+
+                            // 构建es索引
                             IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(indexs.get(table));
                             ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.
                                     getMappingContext().getPersistentEntity(indexs.get(table));
@@ -141,8 +119,6 @@ public class MysqlDataToEsConfig {
                                             .withDocAsUpsert(true)
                                             .withDocument(Document.parse(payload.getJSONObject("after").toString(SerializerFeature.WriteDateUseDateFormat)))
                                             .build();
-
-
                                     elasticsearchRestTemplate.update(updateQuery,indexCoordinates);
                                     break;
                                 case d:
@@ -164,13 +140,53 @@ public class MysqlDataToEsConfig {
     }
 
     @PreDestroy
-    private void destory() throws Exception {
+    private void destroy() throws Exception {
         if (engine != null) {
             engine.close();
         }
         if (poolExecutor != null) {
             poolExecutor.shutdown();
         }
+    }
+
+
+    /**
+     * @Description 构建执行参数
+     * @return buildPropertites
+     */
+    private Properties buildPropertites() {
+        // 定义mysql连接
+        final Properties props = new Properties();
+        props.setProperty("name", "engine");
+        props.setProperty("connector.class", "io.debezium.connector.mysql.MySqlConnector");
+        // redis记录偏移量
+        props.setProperty("offset.storage", "io.debezium.storage.redis.offset.RedisOffsetBackingStore");
+        props.setProperty("offset.storage.redis.address", mysqlDataToEsPropertites.getRedisUrl());
+        props.setProperty("offset.storage.redis.password", mysqlDataToEsPropertites.getRedisPassword());
+        props.setProperty("offset.flush.interval.ms", "60000");
+        /* 设置属性信息*/
+        JdbcUrlParser.JdbcConnectionInfo jdbcConnectionInfo = JdbcUrlParser.parseJdbcUrl(mysqlDataToEsPropertites.getMysqlUrl());
+        props.setProperty("database.hostname", jdbcConnectionInfo.getHost());
+        props.setProperty("database.port", String.valueOf(jdbcConnectionInfo.getPort()));
+        props.setProperty("database.user", mysqlDataToEsPropertites.getMysqlUsername());
+        props.setProperty("database.password", mysqlDataToEsPropertites.getMysqlPassword());
+        props.setProperty("database.history.store.only.monitored.tables.ddl.events","false");
+        props.setProperty("schema.history.internal", "io.debezium.storage.redis.history.RedisSchemaHistory");
+        props.setProperty("schema.history.internal.redis.address", mysqlDataToEsPropertites.getRedisUrl());
+        props.setProperty("schema.history.internal.redis.password", mysqlDataToEsPropertites.getRedisPassword());
+        props.setProperty("topic.prefix", "my-app-connector");
+        props.setProperty("snapshot.mode", "never");
+        props.setProperty("database.history.store.only.monitored.tables.ddl.events", "false");
+        props.setProperty("database.history.skip.unparseable.ddl", "true");
+        props.setProperty("decimal.handling.mode","string");
+        // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题 todo
+        props.setProperty("database.server.id", "185744");
+        props.setProperty("database.include.list", jdbcConnectionInfo.getDatabase());
+        // 要捕获的数据表
+        props.setProperty("table.include.list", jdbcConnectionInfo.getDatabase() + ".*");
+        props.setProperty("database.connectionTimeZone", "UTC");
+        props.setProperty("database.server.name", "my-app-connector");
+        return props;
     }
 
 }

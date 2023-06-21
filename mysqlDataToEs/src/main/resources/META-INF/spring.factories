@@ -1,5 +1,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   cn.zflzqy.mysqldatatoes.config.MysqlDataToEsConfig
+org.springframework.context.ApplicationListener=cn.zflzqy.mysqldatatoes.config.PackagePathResolver
 
 
 

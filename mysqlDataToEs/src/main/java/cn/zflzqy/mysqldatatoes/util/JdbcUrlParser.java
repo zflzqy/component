@@ -4,6 +4,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.Properties;
 
+/**
+ * @author zflzqy
+ * @Description 解析jdbcUrl
+ */
 public class JdbcUrlParser {
     public static JdbcConnectionInfo parseJdbcUrl(String jdbcUrl) {
         if (!StringUtils.hasText(jdbcUrl)) {

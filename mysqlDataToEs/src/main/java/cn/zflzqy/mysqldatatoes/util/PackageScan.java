@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * @Author: zfl
  * @Date: 2023-05-10-16:29
- * @Description:
+ * @Description: 包扫描器
  */
 public class PackageScan {
     private static final Logger log = LoggerFactory.getLogger(PackageScan.class);
