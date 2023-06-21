@@ -25,6 +25,7 @@ import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreato
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,21 +44,14 @@ public class ShiroConfig {
 
     public final static String CACHE_KEY = "shiro:cache:";
     public final static String SESSION_KEY = "shiro:session:";
+
+    @Autowired
+    private RedisProperties redisProperties;
     /**
      * 过期时间，s（秒）
      */
     public static final int EXPIRE = 1800;
 
-    @Value("${spring.redis.host}")
-    private String host;
-    @Value("${spring.redis.port}")
-    private int port;
-    @Value("${spring.redis.timeout}")
-    private int timeout;
-    @Value("${spring.redis.database}")
-    private int database;
-    @Value("${spring.redis.password}")
-    private String password;
     @Autowired
     private ShiroRedisProperties shiroRedisProperties;
     @Resource
@@ -194,10 +188,10 @@ public class ShiroConfig {
     @Bean
     public RedisManager redisManager() {
         RedisManager redisManager = new RedisManager();
-        redisManager.setHost(host+":"+port);
-        redisManager.setTimeout(timeout);
-        redisManager.setDatabase(database);
-        redisManager.setPassword(password);
+        redisManager.setHost(redisProperties.getHost()+":"+redisProperties.getPort());
+        redisManager.setTimeout((int) redisProperties.getTimeout().toMillis());
+        redisManager.setDatabase(redisProperties.getDatabase());
+        redisManager.setPassword(redisProperties.getPassword());
         return redisManager;
     }
 
