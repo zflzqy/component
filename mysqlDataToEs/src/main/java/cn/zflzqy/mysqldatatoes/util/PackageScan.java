@@ -1,6 +1,5 @@
 package cn.zflzqy.mysqldatatoes.util;
 
-import cn.zflzqy.mysqldatatoes.annotation.ClassIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -49,6 +48,11 @@ public class PackageScan {
     }
 
 
+    /**
+     * 扫描包下的实体
+     * @param packageName：包名
+     * @param directory：文件路径
+     */
     private static void scanEntitiesInDirectory(String packageName, File directory) {
         File[] files = directory.listFiles();
         if (files != null) {
@@ -79,7 +83,16 @@ public class PackageScan {
     private static boolean isEntityClass(Class<?> clazz) {
         // 判断是否带有@Document注解
         boolean annotationPresent = clazz.isAnnotationPresent(Document.class);
-        if (annotationPresent&&!clazz.isAnnotationPresent(ClassIgnore.class)){
+
+        if (annotationPresent){
+            Class aClass = indexs.get(getIndexName(clazz));
+            if (aClass == null){
+                return  true;
+            }
+            // 如果已有的数据是当前类的父类，则返回false
+            if (aClass.isAssignableFrom(clazz)){
+                return  false;
+            };
             return true;
         }
         return false;

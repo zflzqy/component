@@ -67,10 +67,14 @@ public class MysqlDataToEsConfig {
         props.setProperty("database.port", String.valueOf(jdbcConnectionInfo.getPort()));
         props.setProperty("database.user", mysqlDataToEsPropertites.getMysqlUsername());
         props.setProperty("database.password", mysqlDataToEsPropertites.getMysqlPassword());
+        props.setProperty("database.history.store.only.monitored.tables.ddl.events","false");
         props.setProperty("schema.history.internal", "io.debezium.storage.redis.history.RedisSchemaHistory");
         props.setProperty("schema.history.internal.redis.address", mysqlDataToEsPropertites.getRedisUrl());
         props.setProperty("schema.history.internal.redis.password", mysqlDataToEsPropertites.getRedisPassword());
         props.setProperty("topic.prefix", "my-app-connector");
+        props.setProperty("snapshot.mode", "never");
+        props.setProperty("database.history.store.only.monitored.tables.ddl.events", "false");
+        props.setProperty("database.history.skip.unparseable.ddl", "true");
         props.setProperty("decimal.handling.mode","string");
         // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题 todo
         props.setProperty("database.server.id", "185744");

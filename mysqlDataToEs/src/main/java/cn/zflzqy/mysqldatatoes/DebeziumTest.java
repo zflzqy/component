@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
 import io.debezium.engine.format.Json;
+import io.debezium.storage.redis.history.RedisSchemaHistory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -45,6 +46,7 @@ public class DebeziumTest {
 //        MemorySchemaHistory
 //        io.debezium.relational.history.MemorySchemaHistory
         props.setProperty("schema.history.internal", "io.debezium.storage.redis.history.RedisSchemaHistory");
+        props.setProperty("database.history.skip","true");
 
         props.setProperty("schema.history.internal.redis.address","127.0.0.1:6379");
         props.setProperty("schema.history.internal.redis.password","123456");
@@ -53,12 +55,15 @@ public class DebeziumTest {
         // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题 todo
         props.setProperty("database.server.id", "85744");
         //
-        props.setProperty("database.include.list","myapp");
-        props.setProperty("table.include.list", "myapp.crawler_config");//要捕获的数据表
+        props.setProperty("database.include.list","traceability");
+        props.setProperty("table.include.list", ".*");//要捕获的数据表
 //        props.setProperty("database.serverTimezone", "Asia/Shanghai");
         props.setProperty("database.connectionTimeZone", "UTC");
 //        props.setProperty("database.timeZone", "Asia/Shanghai");
         props.setProperty("database.server.name", "my-app-connector");
+        props.setProperty("snapshot.mode", "never");
+        props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true");
+        props.setProperty("schema.history.internal.store.only.captured.tables.ddl","true");
         Execute execute = new Execute();
 
     // Create the engine with this configuration ...
