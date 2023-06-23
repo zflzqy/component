@@ -97,7 +97,13 @@ public class MysqlDataToEsConfig {
                             execute.execute(jsonObject,indexs.get(table));
 
                             // 获取操作类型
-                            OpEnum opEnum = OpEnum.valueOf(payload.getString("op"));
+                            OpEnum opEnum = null;
+                            try {
+                                opEnum = OpEnum.valueOf(payload.getString("op"));
+                            }catch (Exception e) {
+                                log.warn("无相关枚举:{}",payload.getString("op"));
+                                return;
+                            }
 
                             // 构建es索引
                             IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(indexs.get(table));
