@@ -17,10 +17,11 @@ import java.util.*;
  */
 public class PackageScan {
     private static final Logger log = LoggerFactory.getLogger(PackageScan.class);
-    private static Map<String,Class> indexs = new HashMap();
+    // 索引数据
+    private static final Map<String,Class> INDEXS = new HashMap();
 
     public static Map<String, Class> getIndexs() {
-        return indexs;
+        return INDEXS;
     }
 
     /**
@@ -28,10 +29,8 @@ public class PackageScan {
      * @param packageName:包名
      */
     public static void scanEntities(String packageName) {
-
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String packagePath = packageName.replace('.', '/');
-
         try {
             // 获取包路径
             Enumeration<URL> resources = classLoader.getResources(packagePath);
@@ -65,7 +64,7 @@ public class PackageScan {
                     try {
                         Class<?> clazz = Class.forName(className);
                         if (isEntityClass(clazz)) {
-                            indexs.put(getIndexName(clazz),clazz);
+                            INDEXS.put(getIndexName(clazz),clazz);
                         }
                     } catch (ClassNotFoundException e) {
                         log.error("类未找到异常", e);
@@ -85,7 +84,7 @@ public class PackageScan {
         boolean annotationPresent = clazz.isAnnotationPresent(Document.class);
 
         if (annotationPresent){
-            Class aClass = indexs.get(getIndexName(clazz));
+            Class aClass = INDEXS.get(getIndexName(clazz));
             if (aClass == null){
                 return  true;
             }
