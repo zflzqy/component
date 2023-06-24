@@ -5,12 +5,12 @@
     <parent>
         <groupId>cn.zflzqy</groupId>
         <artifactId>component</artifactId>
-        <version>1.0.0</version>
+        <version>2.0.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>cn.zflzqy</groupId>
     <artifactId>web-socket</artifactId>
-    <version>0.0.5</version>
+    <version>2.0.0</version>
     <name>webSocket</name>
     <description>web-socket</description>
     <properties>
