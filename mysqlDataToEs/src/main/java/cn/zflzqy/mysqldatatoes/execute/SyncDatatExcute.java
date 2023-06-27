@@ -1,6 +1,7 @@
 package cn.zflzqy.mysqldatatoes.execute;
 
 import cn.zflzqy.mysqldatatoes.config.MysqlDataToEsConfig;
+import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.event.entity.SyncDatatExcuteEvent;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
@@ -70,7 +71,7 @@ public class SyncDatatExcute {
                 +"::"+properties.getMysqlUsername();
 
         // 数据处理执行类
-        Execute execute = new Execute();
+        Execute execute = new Execute(HandlerEnum.FULL);
 
         // 批次查询上限
         int batchSize = 5000;

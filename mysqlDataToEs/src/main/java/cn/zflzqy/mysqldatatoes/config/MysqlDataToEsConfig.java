@@ -1,6 +1,7 @@
 package cn.zflzqy.mysqldatatoes.config;
 
 import cn.zflzqy.mysqldatatoes.annotation.RequestUrl;
+import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.execute.Execute;
 import cn.zflzqy.mysqldatatoes.execute.SyncDatatExcute;
@@ -80,8 +81,8 @@ public class MysqlDataToEsConfig {
         Map<String, Class> indexs = PackageScan.getIndexs();
 
         // 数据处理执行类
-        Execute execute = new Execute();
-        HandlerService.register(new TransDateHandler());
+        Execute execute = new Execute(HandlerEnum.INCREMENTAL);
+        HandlerService.register(execute,new TransDateHandler());
         // 创建engine
         try {
             engine = DebeziumEngine.create(Json.class)
