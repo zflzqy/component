@@ -1,0 +1,129 @@
+package cn.zflzqy.mysqldatatoes.execute;
+
+import cn.zflzqy.mysqldatatoes.config.MysqlDataToEsConfig;
+import cn.zflzqy.mysqldatatoes.enums.OpEnum;
+import cn.zflzqy.mysqldatatoes.event.entity.SyncDatatExcuteEvent;
+import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
+import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
+import cn.zflzqy.mysqldatatoes.util.PackageScan;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.scheduling.annotation.Async;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class SyncDatatExcute {
+
+    // 执行的进度rediskey
+    public static final String SYNC_DATA_HANDLER = "sync::data:handler";
+
+    private static final int REDIS_EXPIRE = 604800;
+
+    @Autowired
+    private MysqlDataToEsPropertites properties;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
+
+    @Autowired
+    private ElasticsearchConverter elasticsearchConverter;
+
+    @Async
+    public void process() {
+        // 创建数据库连接池
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setUrl(properties.getMysqlUrl());
+        dataSource.setUsername(properties.getMysqlUsername());
+        dataSource.setPassword(properties.getMysqlPassword());
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+        // redis连接池
+        JedisPoolConfig poolConfig = new JedisPoolConfig();
+        JedisPool jedisPool = new JedisPool(poolConfig, properties.getRedisHost(),properties.getRedisPort() , 2000, properties.getRedisPassword());
+
+        // 查询所有的表数据
+        Map<String, Class> indexs = PackageScan.getIndexs();
+        Set<String> tables = indexs.keySet();
+        JSONArray offset = new JSONArray();
+        JdbcUrlParser.JdbcConnectionInfo jdbcConnectionInfo = JdbcUrlParser.parseJdbcUrl(properties.getMysqlUrl());
+        String redisKey = SYNC_DATA_HANDLER+"::"+jdbcConnectionInfo.getHost()
+                +"::"+jdbcConnectionInfo.getPort()
+                +"::"+jdbcConnectionInfo.getDatabase()
+                +"::"+properties.getMysqlUsername();
+        // 批次查询上限
+        int batchSize = 5000;
+        for (String table : tables) {
+            JSONObject tableExecute = new JSONObject();
+            offset.add(tableExecute);
+            int total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM "+table, Integer.class);
+            // 检查是否存在索引
+            boolean exists = elasticsearchRestTemplate.indexOps(indexs.get(table)).exists();
+            if (!exists) {
+                elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
+            }
+            tableExecute.put("table",table);
+            tableExecute.put("count",total);
+            tableExecute.put("batchSize",batchSize);
+
+            // 添加偏移
+            addOffset(jedisPool, offset,redisKey);
+            if (total<=0){
+                // 继续下个表
+                continue;
+            }
+
+            // 然后，我们使用一个循环来按批次查询
+            for (int i = 0; i < total; i += batchSize) {
+                // 我们使用LIMIT和OFFSET关键字来按批次查询
+                List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM "+table+" LIMIT ? OFFSET ?", batchSize, i);
+                // 将数据写入到es中
+                JSONArray datas = new JSONArray();
+                for (Map<String, Object> entry : result){
+                    datas.add(new JSONObject(entry));
+                }
+                MysqlDataToEsConfig.addEsData(elasticsearchRestTemplate, elasticsearchConverter, indexs,datas, table, OpEnum.r);
+
+                // 添加偏移
+                tableExecute.put("current",total);
+                addOffset(jedisPool, offset,redisKey);
+
+            }
+
+        }
+        jedisPool.close();
+        dataSource = null;
+    }
+
+    /**
+     * 添加偏移记录
+     * @param jedisPool：redis连接池
+     * @param offset：偏移数据
+     */
+    private void addOffset(JedisPool jedisPool, JSONArray offset,String redisKey) {
+        // 写入redis进度
+        try (Jedis jedis = jedisPool.getResource()) {
+            // 在这里使用jedis实例来操作Redis
+            jedis.setex(redisKey,REDIS_EXPIRE, offset.toString());
+        }
+
+        // 发布事件
+        eventPublisher.publishEvent(new SyncDatatExcuteEvent(offset.toString()));
+    }
+
+
+}

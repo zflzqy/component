@@ -86,6 +86,20 @@ public class MysqlDataToEsPropertites {
         return redisUrl;
     }
 
+    public String getRedisHost() {
+        if (!StringUtils.hasText(redisUrl)){
+            return redisProperties.getHost();
+        }
+        return redisUrl.split(":")[0];
+    }
+    public int getRedisPort() {
+        if (!StringUtils.hasText(redisUrl)){
+            return redisProperties.getPort();
+        }
+        return Integer.parseInt(redisUrl.split(":")[1]);
+    }
+
+
     public void setRedisUrl(String redisUrl) {
         this.redisUrl = redisUrl;
     }

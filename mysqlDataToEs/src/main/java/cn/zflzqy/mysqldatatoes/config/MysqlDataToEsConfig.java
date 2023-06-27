@@ -2,6 +2,7 @@ package cn.zflzqy.mysqldatatoes.config;
 
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.execute.Execute;
+import cn.zflzqy.mysqldatatoes.execute.SyncDatatExcute;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
@@ -23,15 +25,19 @@ import org.springframework.data.elasticsearch.core.mapping.ElasticsearchPersiste
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
+@EnableAsync
 @EnableConfigurationProperties(MysqlDataToEsPropertites.class)
 public class MysqlDataToEsConfig {
 
@@ -49,6 +55,11 @@ public class MysqlDataToEsConfig {
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
     private ElasticsearchConverter elasticsearchConverter;
+
+    @Bean
+    public SyncDatatExcute syncDatatExcute(){
+        return new SyncDatatExcute();
+    }
 
 
     @PostConstruct
@@ -104,33 +115,17 @@ public class MysqlDataToEsConfig {
                                 log.warn("无相关枚举:{}",payload.getString("op"));
                                 return;
                             }
-
-                            // 构建es索引
-                            IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(indexs.get(table));
-                            ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.
-                                    getMappingContext().getPersistentEntity(indexs.get(table));
-                            String idPropertyName = persistentEntity.getIdProperty().getName();
-
-                            // 根据不同的crud类型返回不同的数据
                             switch (opEnum) {
                                 case r:
                                 case c:
-                                    IndexQuery indexQuery = new IndexQuery();
-                                    indexQuery.setId(payload.getJSONObject("after").getString(idPropertyName));
-                                    indexQuery.setSource(payload.getJSONObject("after").toString(SerializerFeature.WriteDateUseDateFormat));
-                                    elasticsearchRestTemplate.index(indexQuery,indexCoordinates);
-                                    break;
                                 case u:
-                                    UpdateQuery updateQuery = UpdateQuery.builder(payload.getJSONObject("after").getString(idPropertyName))
-                                            .withDocAsUpsert(true)
-                                            .withDocument(Document.parse(payload.getJSONObject("after").toString(SerializerFeature.WriteDateUseDateFormat)))
-                                            .build();
-                                    elasticsearchRestTemplate.update(updateQuery,indexCoordinates);
+                                    addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("after"), table, opEnum);
                                     break;
                                 case d:
-                                    elasticsearchRestTemplate.delete(payload.getObject("before",indexs.get(table)));
+                                    addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("before"), table, opEnum);
                                 default:
                             }
+
 
 
                         } catch (Exception e) {
@@ -142,6 +137,56 @@ public class MysqlDataToEsConfig {
             poolExecutor.execute(engine);
         } catch (Exception e) {
             log.error("创建 engine 失败", e);
+        }
+    }
+
+    public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
+                                 ElasticsearchConverter elasticsearchConverter,
+                                 Map<String, Class> indexs, JSONObject data, String table, OpEnum opEnum) {
+        List<JSONObject> datas = new ArrayList<JSONObject>();
+        datas.add(data);
+        addEsData(elasticsearchRestTemplate, elasticsearchConverter,indexs,datas,table,opEnum);
+
+    }
+
+    public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
+                                 ElasticsearchConverter elasticsearchConverter,
+                                 Map<String, Class> indexs, List<JSONObject> data, String table, OpEnum opEnum) {
+        // 构建es索引
+        IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(indexs.get(table));
+        ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.
+                getMappingContext().getPersistentEntity(indexs.get(table));
+        String idPropertyName = persistentEntity.getIdProperty().getName();
+
+        // 根据不同的crud类型返回不同的数据
+        switch (opEnum) {
+            case r:
+            case c:
+                List<IndexQuery> indexQueries = new ArrayList<IndexQuery>();
+                for (int i = 0; i <data.size(); i++) {
+                    IndexQuery indexQuery = new IndexQuery();
+                    indexQuery.setId(data.get(i).getString(idPropertyName));
+                    indexQuery.setSource(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat));
+                    indexQueries.add(indexQuery);
+                }
+                elasticsearchRestTemplate.bulkIndex(indexQueries,indexCoordinates);
+                break;
+            case u:
+                List<UpdateQuery> updateQueries = new ArrayList<UpdateQuery>();
+                for (int i = 0; i <data.size(); i++) {
+                    UpdateQuery updateQuery = UpdateQuery.builder(data.get(i).getString(idPropertyName))
+                            .withDocAsUpsert(true)
+                            .withDocument(Document.parse(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat)))
+                            .build();
+                    updateQueries.add(updateQuery);
+                }
+                elasticsearchRestTemplate.bulkUpdate(updateQueries,indexCoordinates);
+                break;
+            case d:
+                for (int i = 0; i <data.size(); i++) {
+                    elasticsearchRestTemplate.delete(JSONObject.toJavaObject(data.get(i),indexs.get(table)));
+                }
+            default:
         }
     }
 
