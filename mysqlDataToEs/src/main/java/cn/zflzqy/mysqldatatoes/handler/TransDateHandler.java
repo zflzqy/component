@@ -22,8 +22,7 @@ public class TransDateHandler implements HandlerService {
     @Override
     public void execute(JSONObject jsonObject,Class asClass)  {
         JSONObject payload = jsonObject.getJSONObject("payload");
-        JSONObject source = payload.getJSONObject("source");
-        if (!jsonObject.containsKey("schema")){
+        if (payload==null&&!jsonObject.containsKey("schema")){
             return;
         }
         JSONObject schema = jsonObject.getJSONObject("schema");
@@ -55,7 +54,6 @@ public class TransDateHandler implements HandlerService {
                         deal(payload.getJSONObject("before"),asJsonObject.getJSONArray("fields"));
                     }
                 }
-//                elasticsearchRestTemplate.delete(gson.fromJson(payload.get("after").getAsJsonObject().toString(), indexs.get(table)));
             default:
         }
     }

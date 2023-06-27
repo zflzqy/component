@@ -1,8 +1,11 @@
 package cn.zflzqy.mysqldatatoes.config;
 
+import cn.zflzqy.mysqldatatoes.annotation.RequestUrl;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.execute.Execute;
 import cn.zflzqy.mysqldatatoes.execute.SyncDatatExcute;
+import cn.zflzqy.mysqldatatoes.handler.HandlerService;
+import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
@@ -30,11 +33,14 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Configuration
 @EnableAsync
@@ -75,6 +81,7 @@ public class MysqlDataToEsConfig {
 
         // 数据处理执行类
         Execute execute = new Execute();
+        HandlerService.register(new TransDateHandler());
         // 创建engine
         try {
             engine = DebeziumEngine.create(Json.class)
@@ -152,11 +159,19 @@ public class MysqlDataToEsConfig {
     public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
                                  ElasticsearchConverter elasticsearchConverter,
                                  Map<String, Class> indexs, List<JSONObject> data, String table, OpEnum opEnum) {
+        Class aClass = indexs.get(table);
         // 构建es索引
-        IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(indexs.get(table));
-        ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.
-                getMappingContext().getPersistentEntity(indexs.get(table));
+        IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(aClass);
+        // 获取id字段
+        ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.getMappingContext().getPersistentEntity(aClass);
         String idPropertyName = persistentEntity.getIdProperty().getName();
+
+        // 得到前端跳转的请求参数地址
+        String requestUrl = null;
+        Annotation annotation = aClass.getAnnotation(RequestUrl.class);
+        if (annotation!=null) {
+            requestUrl = ((RequestUrl) annotation).requestUrl();
+        }
 
         // 根据不同的crud类型返回不同的数据
         switch (opEnum) {
@@ -164,6 +179,7 @@ public class MysqlDataToEsConfig {
             case c:
                 List<IndexQuery> indexQueries = new ArrayList<IndexQuery>();
                 for (int i = 0; i <data.size(); i++) {
+                    data.get(i).put("requestUrl",buildRequestUrl(requestUrl,data.get(i)));
                     IndexQuery indexQuery = new IndexQuery();
                     indexQuery.setId(data.get(i).getString(idPropertyName));
                     indexQuery.setSource(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat));
@@ -174,6 +190,7 @@ public class MysqlDataToEsConfig {
             case u:
                 List<UpdateQuery> updateQueries = new ArrayList<UpdateQuery>();
                 for (int i = 0; i <data.size(); i++) {
+                    data.get(i).put("requestUrl",buildRequestUrl(requestUrl,data.get(i)));
                     UpdateQuery updateQuery = UpdateQuery.builder(data.get(i).getString(idPropertyName))
                             .withDocAsUpsert(true)
                             .withDocument(Document.parse(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat)))
@@ -184,7 +201,7 @@ public class MysqlDataToEsConfig {
                 break;
             case d:
                 for (int i = 0; i <data.size(); i++) {
-                    elasticsearchRestTemplate.delete(JSONObject.toJavaObject(data.get(i),indexs.get(table)));
+                    elasticsearchRestTemplate.delete(JSONObject.toJavaObject(data.get(i),aClass));
                 }
             default:
         }
@@ -238,6 +255,27 @@ public class MysqlDataToEsConfig {
         props.setProperty("database.connectionTimeZone", "UTC");
         props.setProperty("database.server.name", "my-app-connector");
         return props;
+    }
+
+    /**
+     * 替换请求中的参数信息
+     * @param content
+     * @param data
+     * @return
+     */
+    private static String buildRequestUrl(String content, JSONObject data){
+        String pattern = "\\{(.*?)\\}".intern();
+        Pattern p = Pattern.compile(pattern);
+        Matcher m = p.matcher(content);
+        StringBuffer sb = new StringBuffer();
+        while (m.find())
+        {
+            String key = m.group(1);
+            String value = data.getString(key);
+            m.appendReplacement(sb, value == null ? "" : value);
+        }
+        m.appendTail(sb);
+        return  sb.toString();
     }
 
 }

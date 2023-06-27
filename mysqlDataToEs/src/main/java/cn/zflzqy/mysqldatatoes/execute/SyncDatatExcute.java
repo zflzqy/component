@@ -60,22 +60,28 @@ public class SyncDatatExcute {
         Map<String, Class> indexs = PackageScan.getIndexs();
         Set<String> tables = indexs.keySet();
         JSONArray offset = new JSONArray();
+
+        // mysql连接信息
         JdbcUrlParser.JdbcConnectionInfo jdbcConnectionInfo = JdbcUrlParser.parseJdbcUrl(properties.getMysqlUrl());
+        // rediskey
         String redisKey = SYNC_DATA_HANDLER+"::"+jdbcConnectionInfo.getHost()
                 +"::"+jdbcConnectionInfo.getPort()
                 +"::"+jdbcConnectionInfo.getDatabase()
                 +"::"+properties.getMysqlUsername();
+
+        // 数据处理执行类
+        Execute execute = new Execute();
+
         // 批次查询上限
         int batchSize = 5000;
         for (String table : tables) {
             JSONObject tableExecute = new JSONObject();
             offset.add(tableExecute);
             int total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM "+table, Integer.class);
-            // 检查是否存在索引
-            boolean exists = elasticsearchRestTemplate.indexOps(indexs.get(table)).exists();
-            if (!exists) {
-                elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
-            }
+            // 先删除索引，主要是为了防止部分数据残留
+            elasticsearchRestTemplate.indexOps(indexs.get(table)).delete();
+            // 创建索引
+            elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
             tableExecute.put("table",table);
             tableExecute.put("count",total);
             tableExecute.put("batchSize",batchSize);
@@ -91,10 +97,13 @@ public class SyncDatatExcute {
             for (int i = 0; i < total; i += batchSize) {
                 // 我们使用LIMIT和OFFSET关键字来按批次查询
                 List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM "+table+" LIMIT ? OFFSET ?", batchSize, i);
+
                 // 将数据写入到es中
                 JSONArray datas = new JSONArray();
                 for (Map<String, Object> entry : result){
-                    datas.add(new JSONObject(entry));
+                    JSONObject jsonObject = new JSONObject(entry);
+                    execute.execute(jsonObject,indexs.get(table));
+                    datas.add(jsonObject);
                 }
                 MysqlDataToEsConfig.addEsData(elasticsearchRestTemplate, elasticsearchConverter, indexs,datas, table, OpEnum.r);
 
