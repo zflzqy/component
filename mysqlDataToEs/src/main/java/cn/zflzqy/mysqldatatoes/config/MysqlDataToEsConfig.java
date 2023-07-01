@@ -83,8 +83,6 @@ public class MysqlDataToEsConfig {
         Execute execute = new Execute(HandlerEnum.INCREMENTAL);
         HandlerService.register(execute,new TransDateHandler());
 
-
-
         // 创建engine
         try {
             engine = DebeziumEngine.create(Json.class)
