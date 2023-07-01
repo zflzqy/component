@@ -1,5 +1,6 @@
 package cn.zflzqy.mysqldatatoes.execute;
 
+import cn.zflzqy.mysqldatatoes.config.CustomConsumer;
 import cn.zflzqy.mysqldatatoes.config.MysqlDataToEsConfig;
 import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
@@ -12,7 +13,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.scheduling.annotation.Async;
@@ -39,9 +39,6 @@ public class SyncDatatExcute {
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
-
-    @Autowired
-    private ElasticsearchConverter elasticsearchConverter;
 
     @Async
     public void process() {
@@ -106,7 +103,7 @@ public class SyncDatatExcute {
                     execute.execute(jsonObject,indexs.get(table));
                     datas.add(jsonObject);
                 }
-                MysqlDataToEsConfig.addEsData(elasticsearchRestTemplate, indexs,datas, table, OpEnum.r);
+                CustomConsumer.addEsData(elasticsearchRestTemplate, indexs,datas, table, OpEnum.r);
 
                 // 添加偏移
                 tableExecute.put("current",total);
