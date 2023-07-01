@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.execute.Execute;
 import com.alibaba.fastjson.JSONObject;
 import io.debezium.engine.ChangeEvent;
@@ -54,7 +55,7 @@ public class DebeziumTest {
         props.setProperty("snapshot.mode", "never");
         props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true");
         props.setProperty("schema.history.internal.store.only.captured.tables.ddl","true");
-        Execute execute = new Execute();
+        Execute execute = new Execute(HandlerEnum.INCREMENTAL);
 
     // Create the engine with this configuration ...
         try (DebeziumEngine<ChangeEvent<String, String>> engine = DebeziumEngine.create(Json.class)

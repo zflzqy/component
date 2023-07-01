@@ -22,10 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
 import org.springframework.data.elasticsearch.core.document.Document;
-import org.springframework.data.elasticsearch.core.mapping.ElasticsearchPersistentEntity;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
@@ -35,11 +35,10 @@ import org.springframework.util.StringUtils;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +56,6 @@ public class MysqlDataToEsConfig {
 
     @Autowired
     private MysqlDataToEsPropertites mysqlDataToEsPropertites;
-
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
@@ -71,14 +69,16 @@ public class MysqlDataToEsConfig {
 
     @PostConstruct
     public void start() {
-        // 构建执行参数
-        Properties props = buildPropertites();
 
         // 扫描实体
         PackageScan.scanEntities(StringUtils.hasText(mysqlDataToEsPropertites.getBasePackage())?
                 mysqlDataToEsPropertites.getBasePackage():
                 PackagePathResolver.mainClassPackagePath);
         Map<String, Class> indexs = PackageScan.getIndexs();
+
+        // 构建执行参数
+        Properties props = buildPropertites(indexs);
+
 
         // 数据处理执行类
         Execute execute = new Execute(HandlerEnum.INCREMENTAL);
@@ -87,59 +87,8 @@ public class MysqlDataToEsConfig {
         try {
             engine = DebeziumEngine.create(Json.class)
                     .using(props)
-                    .notifying(record -> {
-                        try {
-                            // 处理数据，推送到es
-                            String value = record.value();
-                            if (!StringUtils.hasText(value)) {
-                                log.warn("没有数据value的值");
-                                return;
-                            }
-
-                            // 将字符串转换为 JsonObject
-                            JSONObject jsonObject = JSONObject.parseObject(value);
-                            JSONObject payload = jsonObject.getJSONObject("payload");
-                            JSONObject source = payload.getJSONObject("source");
-                            String table = source.getString("table");
-                            if (!indexs.containsKey(table)) {
-                                log.info("未配置{}的索引实体，跳过", table);
-                                return;
-                            }
-
-                            // 检查是否存在索引
-                            boolean exists = elasticsearchRestTemplate.indexOps(indexs.get(table)).exists();
-                            if (!exists) {
-                                elasticsearchRestTemplate.indexOps(indexs.get(table)).createWithMapping();
-                            }
-
-                            // 处理数据
-                            execute.execute(jsonObject,indexs.get(table));
-
-                            // 获取操作类型
-                            OpEnum opEnum = null;
-                            try {
-                                opEnum = OpEnum.valueOf(payload.getString("op"));
-                            }catch (Exception e) {
-                                log.warn("无相关枚举:{}",payload.getString("op"));
-                                return;
-                            }
-                            switch (opEnum) {
-                                case r:
-                                case c:
-                                case u:
-                                    addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("after"), table, opEnum);
-                                    break;
-                                case d:
-                                    addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("before"), table, opEnum);
-                                default:
-                            }
-
-
-
-                        } catch (Exception e) {
-                            log.error("处理异常", e);
-                        }
-                    }).build();
+                    .notifying(new CustomConsumer(indexs,execute))
+                    .build();
 
             poolExecutor = ThreadPoolFactory.build();
             poolExecutor.execute(engine);
@@ -148,6 +97,92 @@ public class MysqlDataToEsConfig {
         }
     }
 
+    /**
+     * @description 数据消费
+     */
+    class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
+        private  Map<String, Class> indexs;
+        private  Execute execute;
+
+        public CustomConsumer(Map<String, Class> indexs, Execute execute) {
+            this.indexs = indexs;
+            this.execute = execute;
+        }
+
+        @Override
+        public void accept(ChangeEvent<String, String> record) {
+            if (record==null||!StringUtils.hasText(record.value())){
+                log.warn("没有数据value的值");
+                return;
+            }
+
+            // 处理的数据
+            String value = record.value();
+            try {
+                // 将字符串转换为 JsonObject
+                JSONObject jsonObject = JSONObject.parseObject(value);
+                JSONObject payload = jsonObject.getJSONObject("payload");
+                JSONObject source = payload.getJSONObject("source");
+                String table = source.getString("table");
+                if (!indexs.containsKey(table)) {
+                    log.info("未配置{}的索引实体，跳过", table);
+                    return;
+                }
+
+                // 检查是否存在索引
+                boolean exists = elasticsearchRestTemplate.indexOps(indexs.get(table)).exists();
+                if (!exists) {
+                    elasticsearchRestTemplate.indexOps(indexs.get(table)).createWithMapping();
+                }
+
+                // 处理数据
+                execute.execute(jsonObject,indexs.get(table));
+
+                // 获取操作类型
+                OpEnum opEnum = null;
+                try {
+                    opEnum = OpEnum.valueOf(payload.getString("op"));
+                }catch (Exception e) {
+                    log.warn("无相关枚举:{}",payload.getString("op"));
+                    return;
+                }
+                switch (opEnum) {
+                    case r:
+                    case c:
+                    case u:
+                        addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("after"), table, opEnum);
+                        break;
+                    case d:
+                        addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("before"), table, opEnum);
+                    default:
+                }
+            } catch (Exception e) {
+                log.error("处理异常", e);
+            }
+        }
+    }
+
+
+    @PreDestroy
+    private void destroy() throws Exception {
+        if (engine != null) {
+            engine.close();
+        }
+        if (poolExecutor != null) {
+            poolExecutor.shutdown();
+        }
+    }
+
+
+    /**
+     * @description 添加数据到es
+     * @param elasticsearchRestTemplate
+     * @param elasticsearchConverter
+     * @param indexs
+     * @param data
+     * @param table
+     * @param opEnum
+     */
     public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
                                  ElasticsearchConverter elasticsearchConverter,
                                  Map<String, Class> indexs, JSONObject data, String table, OpEnum opEnum) {
@@ -157,6 +192,15 @@ public class MysqlDataToEsConfig {
 
     }
 
+    /**
+     * @description 添加数据到es
+     * @param elasticsearchRestTemplate
+     * @param elasticsearchConverter
+     * @param indexs
+     * @param data
+     * @param table
+     * @param opEnum
+     */
     public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
                                  ElasticsearchConverter elasticsearchConverter,
                                  Map<String, Class> indexs, List<JSONObject> data, String table, OpEnum opEnum) {
@@ -164,8 +208,13 @@ public class MysqlDataToEsConfig {
         // 构建es索引
         IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(aClass);
         // 获取id字段
-        ElasticsearchPersistentEntity<?> persistentEntity = elasticsearchConverter.getMappingContext().getPersistentEntity(aClass);
-        String idPropertyName = persistentEntity.getIdProperty().getName();
+        String idPropertyName = null;
+        Field[] fields = aClass.getDeclaredFields();
+        for (Field field : fields) {
+            if (field.getAnnotation(Id.class)!=null) {
+                idPropertyName = field.getName();
+            }
+        }
 
         // 得到前端跳转的请求参数地址
         String requestUrl = null;
@@ -208,22 +257,12 @@ public class MysqlDataToEsConfig {
         }
     }
 
-    @PreDestroy
-    private void destroy() throws Exception {
-        if (engine != null) {
-            engine.close();
-        }
-        if (poolExecutor != null) {
-            poolExecutor.shutdown();
-        }
-    }
-
-
     /**
      * @Description 构建执行参数
      * @return buildPropertites
+     * @param indexs
      */
-    private Properties buildPropertites() {
+    private Properties buildPropertites(Map<String, Class> indexs) {
         // 定义mysql连接
         final Properties props = new Properties();
         props.setProperty("name", "engine");
@@ -252,7 +291,12 @@ public class MysqlDataToEsConfig {
         props.setProperty("database.server.id", "185744");
         props.setProperty("database.include.list", jdbcConnectionInfo.getDatabase());
         // 要捕获的数据表
-        props.setProperty("table.include.list", jdbcConnectionInfo.getDatabase() + ".*");
+        Set<String> tables = indexs.keySet();
+        StringBuffer sb = new StringBuffer();
+        for (String table : tables) {
+            sb.append(jdbcConnectionInfo.getDatabase()).append(".").append(table).append(",");
+        }
+        props.setProperty("table.include.list", sb.toString());
         props.setProperty("database.connectionTimeZone", "UTC");
         props.setProperty("database.server.name", "my-app-connector");
         return props;
@@ -265,6 +309,9 @@ public class MysqlDataToEsConfig {
      * @return
      */
     private static String buildRequestUrl(String content, JSONObject data){
+        if (!StringUtils.hasText(content)){
+            return "";
+        }
         String pattern = "\\{(.*?)\\}".intern();
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(content);

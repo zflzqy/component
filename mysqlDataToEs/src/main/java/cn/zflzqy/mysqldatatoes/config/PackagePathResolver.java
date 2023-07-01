@@ -17,6 +17,7 @@ public class PackagePathResolver implements ApplicationListener<ApplicationStart
 
     @Override
     public void onApplicationEvent(ApplicationStartingEvent event) {
+        // 添加映射属性 todo，在处理器中检查是否存在该字段，检查字段的属性
         SpringApplication app = event.getSpringApplication();
         Class<?> mainApplicationClass = app.getMainApplicationClass();
         if (mainApplicationClass != null) {
