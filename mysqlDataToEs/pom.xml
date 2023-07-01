@@ -5,12 +5,12 @@
     <parent>
         <groupId>cn.zflzqy</groupId>
         <artifactId>component</artifactId>
-        <version>2.0.4</version>
+        <version>2.0.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>cn.zflzqy</groupId>
     <artifactId>mysql-data-to-es</artifactId>
-    <version>2.0.4</version>
+    <version>2.0.5</version>
     <name>mysqlDataToEs</name>
     <description>mysqlDataToEs</description>
     <properties>
@@ -47,13 +47,12 @@
             <artifactId>debezium-storage-redis</artifactId>
             <version>${debezium.version}</version>
         </dependency>
-            <!-- Jedis -->
-            <dependency>
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>4.1.1</version>
-            </dependency>
-
+        <!-- Jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.1.1</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>

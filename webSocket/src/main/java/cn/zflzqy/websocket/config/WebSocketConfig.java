@@ -8,13 +8,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.Trigger;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-
-import java.util.Date;
-import java.util.concurrent.ScheduledFuture;
 
 @Configuration
 @EnableWebSocketMessageBroker // 开启Stomp WebSocket服务

@@ -8,12 +8,7 @@ import cn.hutool.json.JSONUtil;
 import cn.zflzqy.shiroclient.config.ShiroConfig;
 import cn.zflzqy.shiroclient.config.ShiroRedisProperties;
 import cn.zflzqy.shiroclient.shiro.ShiroSessionManager;
-import io.buji.pac4j.context.ShiroSessionStore;
 import org.apache.shiro.SecurityUtils;
-import org.pac4j.core.context.J2EContext;
-import org.pac4j.core.context.session.SessionStore;
-import org.pac4j.core.http.adapter.J2ENopHttpActionAdapter;
-import org.pac4j.core.util.CommonHelper;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.servlet.FilterChain;

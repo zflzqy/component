@@ -1,7 +1,6 @@
 package cn.zflzqy.mysqldatatoes.execute;
 
 import cn.zflzqy.mysqldatatoes.config.CustomConsumer;
-import cn.zflzqy.mysqldatatoes.config.MysqlDataToEsConfig;
 import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.event.entity.SyncDatatExcuteEvent;
