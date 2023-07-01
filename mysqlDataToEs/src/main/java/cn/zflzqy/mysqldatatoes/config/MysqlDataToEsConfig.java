@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
 import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
@@ -58,8 +57,6 @@ public class MysqlDataToEsConfig {
     private MysqlDataToEsPropertites mysqlDataToEsPropertites;
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
-    @Autowired
-    private ElasticsearchConverter elasticsearchConverter;
 
     @Bean
     public SyncDatatExcute syncDatatExcute(){
@@ -150,10 +147,10 @@ public class MysqlDataToEsConfig {
                     case r:
                     case c:
                     case u:
-                        addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("after"), table, opEnum);
+                        addEsData(elasticsearchRestTemplate,indexs, payload.getJSONObject("after"), table, opEnum);
                         break;
                     case d:
-                        addEsData(elasticsearchRestTemplate,elasticsearchConverter,indexs, payload.getJSONObject("before"), table, opEnum);
+                        addEsData(elasticsearchRestTemplate,indexs, payload.getJSONObject("before"), table, opEnum);
                     default:
                 }
             } catch (Exception e) {
@@ -177,32 +174,28 @@ public class MysqlDataToEsConfig {
     /**
      * @description 添加数据到es
      * @param elasticsearchRestTemplate
-     * @param elasticsearchConverter
      * @param indexs
      * @param data
      * @param table
      * @param opEnum
      */
     public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
-                                 ElasticsearchConverter elasticsearchConverter,
                                  Map<String, Class> indexs, JSONObject data, String table, OpEnum opEnum) {
         List<JSONObject> datas = new ArrayList<JSONObject>();
         datas.add(data);
-        addEsData(elasticsearchRestTemplate, elasticsearchConverter,indexs,datas,table,opEnum);
+        addEsData(elasticsearchRestTemplate, indexs,datas,table,opEnum);
 
     }
 
     /**
      * @description 添加数据到es
      * @param elasticsearchRestTemplate
-     * @param elasticsearchConverter
      * @param indexs
      * @param data
      * @param table
      * @param opEnum
      */
     public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
-                                 ElasticsearchConverter elasticsearchConverter,
                                  Map<String, Class> indexs, List<JSONObject> data, String table, OpEnum opEnum) {
         Class aClass = indexs.get(table);
         // 构建es索引
