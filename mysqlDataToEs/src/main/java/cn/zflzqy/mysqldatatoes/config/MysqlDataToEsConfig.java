@@ -163,12 +163,16 @@ public class MysqlDataToEsConfig {
         props.setProperty("database.server.id", "185744");
         props.setProperty("database.include.list", jdbcConnectionInfo.getDatabase());
         // 要捕获的数据表
-        Set<String> tables = indexs.keySet();
-        StringBuffer sb = new StringBuffer();
-        for (String table : tables) {
-            sb.append(jdbcConnectionInfo.getDatabase()).append(".").append(table).append(",");
+        if (StringUtils.hasText(mysqlDataToEsPropertites.getIncludeTables())){
+            props.setProperty("table.include.list", mysqlDataToEsPropertites.getIncludeTables());
+        }else {
+            Set<String> tables = indexs.keySet();
+            StringBuffer sb = new StringBuffer();
+            for (String table : tables) {
+                sb.append(jdbcConnectionInfo.getDatabase()).append(".").append(table).append(",");
+            }
+            props.setProperty("table.include.list", sb.toString());
         }
-        props.setProperty("table.include.list", sb.toString());
         props.setProperty("database.connectionTimeZone", "UTC");
         props.setProperty("database.server.name", "my-app-connector");
         return props;

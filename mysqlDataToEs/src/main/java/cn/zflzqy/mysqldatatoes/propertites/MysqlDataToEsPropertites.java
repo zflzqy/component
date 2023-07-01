@@ -33,6 +33,8 @@ public class MysqlDataToEsPropertites {
     private String redisPassword;
     /** 数据库*/
     private Integer redisDatabase;
+    /** 包含的数据表*/
+    private String includeTables;
 
     /** 扫描包路径*/
     private String basePackage;
@@ -123,5 +125,17 @@ public class MysqlDataToEsPropertites {
 
     public void setRedisDatabase(int redisDatabase) {
         this.redisDatabase = redisDatabase;
+    }
+
+    public void setRedisDatabase(Integer redisDatabase) {
+        this.redisDatabase = redisDatabase;
+    }
+
+    public String getIncludeTables() {
+        return includeTables;
+    }
+
+    public void setIncludeTables(String includeTables) {
+        this.includeTables = includeTables;
     }
 }
