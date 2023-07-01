@@ -106,7 +106,7 @@ public class SyncDatatExcute {
                     execute.execute(jsonObject,indexs.get(table));
                     datas.add(jsonObject);
                 }
-                MysqlDataToEsConfig.addEsData(elasticsearchRestTemplate, elasticsearchConverter, indexs,datas, table, OpEnum.r);
+                MysqlDataToEsConfig.addEsData(elasticsearchRestTemplate, indexs,datas, table, OpEnum.r);
 
                 // 添加偏移
                 tableExecute.put("current",total);
