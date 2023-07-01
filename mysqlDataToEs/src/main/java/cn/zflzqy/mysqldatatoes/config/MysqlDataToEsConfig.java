@@ -109,7 +109,7 @@ public class MysqlDataToEsConfig {
                             // 检查是否存在索引
                             boolean exists = elasticsearchRestTemplate.indexOps(indexs.get(table)).exists();
                             if (!exists) {
-                                elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
+                                elasticsearchRestTemplate.indexOps(indexs.get(table)).createWithMapping();
                             }
 
                             // 处理数据
