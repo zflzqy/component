@@ -109,7 +109,7 @@ public class SyncDatatExcute {
             }
 
         }
-        jedisPool.close();
+
         dataSource = null;
     }
 

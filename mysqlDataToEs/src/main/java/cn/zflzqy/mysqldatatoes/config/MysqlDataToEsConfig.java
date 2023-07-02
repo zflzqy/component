@@ -92,6 +92,10 @@ public class MysqlDataToEsConfig {
         if (checkAppPoolExecutor!=null){
             checkAppPoolExecutor.shutdown();
         }
+        if (JedisPoolUtil.getInstance()!=null){
+            // 销毁连接池
+            JedisPoolUtil.getInstance().destroy();
+        }
     }
 
     /**
