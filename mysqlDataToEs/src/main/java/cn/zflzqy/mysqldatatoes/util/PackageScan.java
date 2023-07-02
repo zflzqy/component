@@ -7,10 +7,16 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * @Author: zfl
@@ -33,21 +39,59 @@ public class PackageScan {
     public static void scanEntities(String packageName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String packagePath = packageName.replace('.', '/');
+        String packageResource = packagePath + "/";
+        // 获取包路径
+        Enumeration<URL> resources = null;
         try {
-            // 获取包路径
-            Enumeration<URL> resources = classLoader.getResources(packagePath);
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                File directory = new File(resource.getFile());
-                if (directory.exists() && directory.isDirectory()) {
-                    scanEntitiesInDirectory(packageName, directory);
-                }
-            }
+            resources = classLoader.getResources(packageResource);
         } catch (IOException e) {
-            log.error("io异常", e);
+            log.error("IO 异常：", e);
         }
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement();
+            scanEntitiesInDirectory(packageName, resource);
+        }
+
+        log.info("扫描的索引信息：{}",INDEXS.toString());
     }
 
+
+    /**
+     * 扫描包下的实体
+     * @param packageName：包名
+     * @param directoryURL：文件路径
+     */
+    private static void scanEntitiesInDirectory(String packageName, URL  directoryURL) {
+        try {
+            URI uri = directoryURL.toURI();
+            if (uri.getScheme().equals("file")) {
+                File directory = new File(uri);
+                scanEntitiesInDirectory(packageName, directory);
+            } else if (uri.getScheme().equals("jar")) {
+                JarURLConnection jarURLConnection = (JarURLConnection) directoryURL.openConnection();
+                try (JarFile jarFile = jarURLConnection.getJarFile()) {
+                    Enumeration<JarEntry> entries = jarFile.entries();
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = entries.nextElement();
+                        String entryName = entry.getName();
+                        if (entryName.startsWith(packageName.replace('.', '/')) && entryName.endsWith(".class")) {
+                            String className = entryName.replace('/', '.').substring(0, entryName.length() - 6);
+                            try {
+                                Class<?> clazz = Class.forName(className);
+                                if (isEntityClass(clazz)) {
+                                    INDEXS.put(getIndexName(clazz),clazz);
+                                }
+                            } catch (ClassNotFoundException e) {
+                                log.error("类未找到异常", e);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException | URISyntaxException e) {
+            log.error("IO 异常", e);
+        }
+    }
 
     /**
      * 扫描包下的实体
