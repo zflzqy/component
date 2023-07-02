@@ -9,6 +9,7 @@ import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.CheckApp;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
+import cn.zflzqy.mysqldatatoes.util.JedisPoolUtil;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
@@ -16,7 +17,6 @@ import io.debezium.engine.format.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +26,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.StringUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -37,7 +36,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableAsync
@@ -64,26 +62,18 @@ public class MysqlDataToEsConfig {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-    @Autowired
-    @Qualifier("mysqlDataToEsPool")
-    private JedisPool jedisPool;
-
     @Bean
     public SyncDatatExcute syncDatatExcute(){
         return new SyncDatatExcute();
     }
 
-    @Bean("mysqlDataToEsPool")
-    public JedisPool jedisPool(){
-        // redis连接池
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        JedisPool jedisPool = new JedisPool(poolConfig, mysqlDataToEsPropertites.getRedisHost(),mysqlDataToEsPropertites.getRedisPort() , 2000, mysqlDataToEsPropertites.getRedisPassword());
-        return jedisPool;
-    }
-
 
     @PostConstruct
     public void start() {
+        // 初始化redis客户端
+        JedisPoolUtil.initialize(mysqlDataToEsPropertites);
+        JedisPool jedisPool = JedisPoolUtil.getInstance();
+
         // 扫描实体
         PackageScan.scanEntities(StringUtils.hasText(mysqlDataToEsPropertites.getBasePackage())?
                 mysqlDataToEsPropertites.getBasePackage():
@@ -93,6 +83,7 @@ public class MysqlDataToEsConfig {
         // 获取应用名称，标识集群下的唯一性
         String springName = environment.getProperty("spring.application.name");
         // 每间隔30s检测当前应用是否存活，且标志位为当前应用，
+        checkAppPoolExecutor = ThreadPoolFactory.build("mysql-data-to-es-check");
         checkAppPoolExecutor.submit(new CheckApp(springName,environment.getProperty("server.port"),jedisPool));
         // 构建执行参数
         Properties props = buildPropertites(indexs,jedisPool);
