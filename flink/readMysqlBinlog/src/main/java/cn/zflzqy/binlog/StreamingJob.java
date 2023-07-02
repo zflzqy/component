@@ -18,8 +18,8 @@
 
 package cn.zflzqy.binlog;
 
-import cn.zflzqy.binlog.source.DataStreamStrategy;
 import cn.zflzqy.binlog.parameter.ParameterFactory;
+import cn.zflzqy.binlog.source.DataStreamStrategy;
 import cn.zflzqy.binlog.transform.strategy.SinkContextStrategy;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;

@@ -13,17 +13,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date ：2022/2/24 21:58
  */
 public class ThreadPoolFactory {
-    private static final AtomicInteger count = new AtomicInteger(1);
 
     public ThreadPoolFactory() {
     }
-    public static ThreadPoolExecutor build(){
+    public static ThreadPoolExecutor build(String prefix){
         // cpu核心数据
         ThreadFactory threadFactory = new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
-                thread.setName("mysql-data-to-es" + "-" + count.getAndIncrement());
+                thread.setName(prefix+ "-" + 1);
                 return thread;
             }
         };

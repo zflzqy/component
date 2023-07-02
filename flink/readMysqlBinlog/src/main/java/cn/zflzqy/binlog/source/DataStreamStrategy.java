@@ -5,8 +5,6 @@ import cn.zflzqy.binlog.source.impl.KafkaStream;
 import cn.zflzqy.binlog.source.impl.MySqlBinlogStream;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import io.debezium.time.MicroTime;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;

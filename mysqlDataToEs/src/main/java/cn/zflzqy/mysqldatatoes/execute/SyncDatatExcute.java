@@ -10,6 +10,7 @@ import cn.zflzqy.mysqldatatoes.util.PackageScan;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +27,7 @@ import java.util.Set;
 public class SyncDatatExcute {
 
     // 执行的进度rediskey
-    public static final String SYNC_DATA_HANDLER = "sync::data:handler";
+    public static final String SYNC_DATA_HANDLER = "esToMysqlData::sync::data:handler";
 
     private static final int REDIS_EXPIRE = 604800;
 
@@ -38,6 +39,9 @@ public class SyncDatatExcute {
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Autowired
+    @Qualifier("mysqlDataToEsPool")
+    private JedisPool jedisPool;
 
     @Async
     public void process() {
@@ -48,10 +52,6 @@ public class SyncDatatExcute {
         dataSource.setUsername(properties.getMysqlUsername());
         dataSource.setPassword(properties.getMysqlPassword());
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-
-        // redis连接池
-        JedisPoolConfig poolConfig = new JedisPoolConfig();
-        JedisPool jedisPool = new JedisPool(poolConfig, properties.getRedisHost(),properties.getRedisPort() , 2000, properties.getRedisPassword());
 
         // 查询所有的表数据
         Map<String, Class> indexs = PackageScan.getIndexs();
@@ -84,7 +84,7 @@ public class SyncDatatExcute {
             tableExecute.put("batchSize",batchSize);
 
             // 添加偏移
-            addOffset(jedisPool, offset,redisKey);
+            addOffset(offset,redisKey);
             if (total<=0){
                 // 继续下个表
                 continue;
@@ -106,7 +106,7 @@ public class SyncDatatExcute {
 
                 // 添加偏移
                 tableExecute.put("current",total);
-                addOffset(jedisPool, offset,redisKey);
+                addOffset( offset,redisKey);
 
             }
 
@@ -117,10 +117,9 @@ public class SyncDatatExcute {
 
     /**
      * 添加偏移记录
-     * @param jedisPool：redis连接池
      * @param offset：偏移数据
      */
-    private void addOffset(JedisPool jedisPool, JSONArray offset,String redisKey) {
+    private void addOffset(JSONArray offset,String redisKey) {
         // 写入redis进度
         try (Jedis jedis = jedisPool.getResource()) {
             // 在这里使用jedis实例来操作Redis

@@ -2,7 +2,6 @@ package cn.zflzqy.readMysqlBinlog.parameter.impl;
 
 import cn.zflzqy.readMysqlBinlog.parameter.ParameterParseHandler;
 import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.codehaus.plexus.util.FileUtils;
 

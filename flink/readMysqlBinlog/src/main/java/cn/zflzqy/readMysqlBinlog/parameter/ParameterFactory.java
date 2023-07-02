@@ -3,11 +3,7 @@ package cn.zflzqy.readMysqlBinlog.parameter;
 import cn.zflzqy.readMysqlBinlog.parameter.impl.JsonFileParseHandler;
 import cn.zflzqy.readMysqlBinlog.parameter.impl.PropertitesFileParseHandler;
 import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import org.apache.flink.api.java.utils.ParameterTool;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @Author: zfl
