@@ -47,7 +47,7 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
     @Override
     public void accept(ChangeEvent<String, String> record) {
         if (record == null || !StringUtils.hasText(record.value())) {
-            log.warn("没有数据value的值");
+            log.warn("数据没有value值");
             return;
         }
 

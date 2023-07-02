@@ -1,17 +1,34 @@
 package cn.zflzqy.mysqldatatoes.thread;
 
+import cn.zflzqy.mysqldatatoes.config.CustomConsumer;
+import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
+import cn.zflzqy.mysqldatatoes.execute.Execute;
+import cn.zflzqy.mysqldatatoes.handler.HandlerService;
+import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
+import cn.zflzqy.mysqldatatoes.util.PackageScan;
+import io.debezium.engine.ChangeEvent;
+import io.debezium.engine.DebeziumEngine;
+import io.debezium.engine.format.Json;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @Author: zfl
  * @Date: 2023-07-02-9:41
  * @Description:
  */
-public class CheckApp implements Runnable{
+public class CheckApp implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(CheckApp.class);
+    private static boolean initial = false;
     // 过期时间（秒）
     private static final int EXPIRE_TIME = 60;
     // 当前应用的IP和端口
@@ -20,6 +37,9 @@ public class CheckApp implements Runnable{
     private String appName;
     private String port;
     private JedisPool jedisPool;
+
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    private Properties props;
 
     public String getPort() {
         return port;
@@ -37,10 +57,12 @@ public class CheckApp implements Runnable{
         this.appName = appName;
     }
 
-    public CheckApp(String appName, String port,JedisPool jedisPool) {
+    public CheckApp(String appName, String port, JedisPool jedisPool, ElasticsearchRestTemplate elasticsearchRestTemplate, Properties properties) {
         this.appName = appName;
         this.port = port;
         this.jedisPool = jedisPool;
+        this.elasticsearchRestTemplate = elasticsearchRestTemplate;
+        this.props = properties;
         String ip;
         try {
             ip = InetAddress.getLocalHost().getHostAddress();
@@ -53,22 +75,44 @@ public class CheckApp implements Runnable{
     @Override
     public void run() {
         // 写入redis进度
-        try (Jedis jedis = jedisPool.getResource()) {
-            String key = "esToMysqlData::"+appName;
-            while (true) {
-                if (jedis.setnx(key, IP_PORT)==1) {
-                    // 成功获取到锁
-                    getLock = true;
+        String key = "esToMysqlData::" + appName;
+        ThreadPoolExecutor poolExecutor = null;
+        DebeziumEngine<ChangeEvent<String, String>> engine = null;
+        while (true) {
+            try (Jedis jedis = jedisPool.getResource()) {
+
+                if (jedis.setnx(key, IP_PORT) == 1) {
+                    // 成功获取到锁,创建engine
+                    Map<String, Class> indexs = PackageScan.getIndexs();
+                    try {
+                        log.info("{}获取到了执行器",IP_PORT);
+                        // 数据处理执行类
+                        Execute execute = new Execute(HandlerEnum.INCREMENTAL);
+                        HandlerService.register(execute, new TransDateHandler());
+                        engine = DebeziumEngine.create(Json.class)
+                                .using(props)
+                                .notifying(new CustomConsumer(indexs, execute, elasticsearchRestTemplate))
+                                .build();
+                        // 构建线程池
+                        poolExecutor = ThreadPoolFactory.build("mysql-data-to-es");
+                        // 提交任务
+                        poolExecutor.execute(engine);
+                        initial = true;
+                    } catch (Exception e) {
+                        log.error("创建 engine 失败", e);
+                    }
                 }
+
                 // 更新过期时间
-                if (jedis.get(key).equals(IP_PORT)) {
+                if (IP_PORT.equals(jedis.get(key))&&initial) {
                     jedis.expire(key, EXPIRE_TIME);
                 }
 
                 try {
-                    Thread.sleep(EXPIRE_TIME/2 * 1000);
+                    log.info("当前机器：{}",IP_PORT);
+                    Thread.sleep(EXPIRE_TIME / 2 * 1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    log.error("中断异常：",e);
                 }
             }
         }

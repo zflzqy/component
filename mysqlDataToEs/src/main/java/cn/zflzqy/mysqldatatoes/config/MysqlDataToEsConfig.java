@@ -43,11 +43,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class MysqlDataToEsConfig {
 
     private static final Logger log = LoggerFactory.getLogger(MysqlDataToEsConfig.class);
-
-    private static DebeziumEngine<ChangeEvent<String, String>> engine;
-
-    // 执行器执行应用
-    private ThreadPoolExecutor poolExecutor;
     // 检测app是否正确的应用
     private ThreadPoolExecutor checkAppPoolExecutor;
 
@@ -80,54 +75,22 @@ public class MysqlDataToEsConfig {
                 PackagePathResolver.mainClassPackagePath);
         Map<String, Class> indexs = PackageScan.getIndexs();
 
-        // 获取应用名称，标识集群下的唯一性
-        String springName = environment.getProperty("spring.application.name");
-        // 每间隔30s检测当前应用是否存活，且标志位为当前应用，
-        checkAppPoolExecutor = ThreadPoolFactory.build("mysql-data-to-es-check");
-        checkAppPoolExecutor.submit(new CheckApp(springName,environment.getProperty("server.port"),jedisPool));
         // 构建执行参数
         Properties props = buildPropertites(indexs,jedisPool);
 
-        // 数据处理执行类
-        Execute execute = new Execute(HandlerEnum.INCREMENTAL);
-        HandlerService.register(execute,new TransDateHandler());
-        while (true) {
-            if (CheckApp.getLock) {
-                // 创建engine
-                try {
-                    engine = DebeziumEngine.create(Json.class)
-                            .using(props)
-                            .notifying(new CustomConsumer(indexs, execute, elasticsearchRestTemplate))
-                            .build();
-                    // 构建线程池
-                    poolExecutor = ThreadPoolFactory.build("mysql-data-to-es");
-                    // 提交任务
-                    poolExecutor.execute(engine);
-                } catch (Exception e) {
-                    log.error("创建 engine 失败", e);
-                }
-                break;
-            }else {
-                try {
-                    // 等待一段时间
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    log.error("中断异常：",e);
-                }
-            }
-        }
+        // 获取应用名称，标识集群下的唯一性
+        String springName = environment.getProperty("spring.application.name");
+
+        // 每间隔30s检测当前应用是否存活，且标志位为当前应用，
+        checkAppPoolExecutor = ThreadPoolFactory.build("mysql-data-to-es-check");
+        checkAppPoolExecutor.execute(new CheckApp(springName,environment.getProperty("server.port"),jedisPool,elasticsearchRestTemplate,props));
+
     }
 
     @PreDestroy
     private void destroy() throws Exception {
-        if (engine != null) {
-            engine.close();
-        }
-        if (poolExecutor != null) {
-            poolExecutor.shutdown();
-        }
         if (checkAppPoolExecutor!=null){
-            poolExecutor.shutdown();
+            checkAppPoolExecutor.shutdown();
         }
     }
 
