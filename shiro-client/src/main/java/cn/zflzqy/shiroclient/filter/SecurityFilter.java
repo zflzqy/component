@@ -67,7 +67,7 @@ public class SecurityFilter extends io.buji.pac4j.filter.SecurityFilter {
             // 用户会话
             String session = SecurityUtils.getSubject().getSession().getId().toString();
             // 刷新会话缓存信息
-            if (stringRedisTemplate == null || StrUtil.isNotBlank(session)) {
+            if (stringRedisTemplate == null || StrUtil.isBlank(session)) {
                 return;
             }
 
