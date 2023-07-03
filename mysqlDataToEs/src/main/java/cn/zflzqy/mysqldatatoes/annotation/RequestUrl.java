@@ -12,5 +12,4 @@ import java.lang.annotation.*;
 public @interface RequestUrl {
     // 请求地址
     String requestUrl() default "";
-
 }

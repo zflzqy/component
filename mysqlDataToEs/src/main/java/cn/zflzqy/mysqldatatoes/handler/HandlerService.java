@@ -10,10 +10,10 @@ import com.alibaba.fastjson.JSONObject;
  * @Description:
  */
 public interface HandlerService {
-    public static void register(Execute execute,HandlerService handlerService){
-        if (execute.getHandlerEnum()== HandlerEnum.INCREMENTAL) {
+    public static void register(HandlerEnum handlerEnum,HandlerService handlerService){
+        if (handlerEnum== HandlerEnum.INCREMENTAL) {
             Execute.getExcueteHandlerServices().add(handlerService);
-        }else if (execute.getHandlerEnum()== HandlerEnum.FULL){
+        }else if (handlerEnum== HandlerEnum.FULL){
             Execute.getFullHandlerServices().add(handlerService);
         }
     }

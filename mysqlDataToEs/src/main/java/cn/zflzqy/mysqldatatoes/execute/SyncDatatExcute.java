@@ -4,6 +4,7 @@ import cn.zflzqy.mysqldatatoes.config.CustomConsumer;
 import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.event.entity.SyncDatatExcuteEvent;
+import cn.zflzqy.mysqldatatoes.handler.HandlerService;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.JedisPoolUtil;
@@ -39,6 +40,13 @@ public class SyncDatatExcute {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
+    private Execute execute;
+
+    public SyncDatatExcute() {
+        execute = new Execute(HandlerEnum.FULL);
+
+    }
+
     @Async
     public void process() {
         JedisPool jedisPool = JedisPoolUtil.getInstance();
@@ -63,9 +71,6 @@ public class SyncDatatExcute {
                 +"::"+jdbcConnectionInfo.getPort()
                 +"::"+jdbcConnectionInfo.getDatabase()
                 +"::"+properties.getMysqlUsername();
-
-        // 数据处理执行类
-        Execute execute = new Execute(HandlerEnum.FULL);
 
         // 批次查询上限
         int batchSize = 5000;

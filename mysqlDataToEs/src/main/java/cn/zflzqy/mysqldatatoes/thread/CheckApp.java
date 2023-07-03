@@ -37,6 +37,7 @@ public class CheckApp implements Runnable {
     private String appName;
     private String port;
     private JedisPool jedisPool;
+    private Execute execute;
 
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     private Properties props;
@@ -70,6 +71,9 @@ public class CheckApp implements Runnable {
             ip = "127.0.0.1";
         }
         IP_PORT = ip + port;
+        // 数据处理执行类
+        this.execute = new Execute(HandlerEnum.INCREMENTAL);
+        HandlerService.register(HandlerEnum.INCREMENTAL, new TransDateHandler());
     }
 
     @Override
@@ -86,9 +90,6 @@ public class CheckApp implements Runnable {
                     Map<String, Class> indexs = PackageScan.getIndexs();
                     try {
                         log.info("{}获取到了执行器",IP_PORT);
-                        // 数据处理执行类
-                        Execute execute = new Execute(HandlerEnum.INCREMENTAL);
-                        HandlerService.register(execute, new TransDateHandler());
                         engine = DebeziumEngine.create(Json.class)
                                 .using(props)
                                 .notifying(new CustomConsumer(indexs, execute, elasticsearchRestTemplate))
