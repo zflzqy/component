@@ -135,23 +135,12 @@ public class MysqlDataToEsConfig {
         // 设置默认即可，但是会存在多项目的情况下serverid偏移的问题
         long serverId = 100000L;
         try (Jedis jedis = jedisPool.getResource()) {
-            // 在这里使用jedis实例来操作Redis
-            String hostAddress ="";
-            try {
-                 hostAddress = InetAddress.getLocalHost().getHostAddress();
-            } catch (UnknownHostException e) {
-                log.error("获取host失败：",e);
-                hostAddress = UUID.randomUUID().toString();
-            }
-
             // 如果不存在key则设置起始值为100000
             boolean exists = jedis.exists(SLAVE_ID_KEY);
-            if (!exists) {
-                serverId = jedis.setnx(SLAVE_ID_KEY, "100000");
+            if (exists||jedis.setnx(SLAVE_ID_KEY, "100000")==0) {
+                // 获取自增的值
+                serverId = jedis.incr(SLAVE_ID_KEY);
             }
-            // 获取自增的值
-            long rs = jedis.incr(SLAVE_ID_KEY);
-            jedis.setex(SLAVE_ID_KEY+"::"+hostAddress+"::"+environment.getProperty("server.port"),30*24*60*60, String.valueOf(rs));
         }
         props.setProperty("database.server.id", String.valueOf(serverId));
 
