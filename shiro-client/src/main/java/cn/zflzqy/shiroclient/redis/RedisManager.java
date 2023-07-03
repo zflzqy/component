@@ -1,5 +1,6 @@
 package cn.zflzqy.shiroclient.redis;
 
+import cn.hutool.core.util.CharsetUtil;
 import org.crazycake.shiro.IRedisManager;
 import org.crazycake.shiro.common.WorkAloneRedisManager;
 import redis.clients.jedis.Jedis;
@@ -37,20 +38,31 @@ public class RedisManager extends WorkAloneRedisManager implements IRedisManager
         } else {
             Jedis jedis = null;
             try {
-                jedis     = this.getJedis();
+                jedis = this.getJedis();
                 if (expireTime > 0) {
                     jedis.setex(key,Long.valueOf(expireTime),value);
                 }else {
                     jedis.set(key, value);
                 }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            finally {
+            }finally {
                 jedis.close();
             }
 
             return value;
+        }
+    }
+
+    @Override
+    public void del(byte[] key) {
+        if (key != null) {
+            Jedis jedis = null;
+            try {
+                jedis = this.getJedis();
+                jedis.setex(key,1L,new byte[]{0});
+            }finally {
+                jedis.close();
+            }
+
         }
     }
 
