@@ -1,19 +1,12 @@
 package cn.zflzqy.mysqldatatoes.config;
 
-import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
-import cn.zflzqy.mysqldatatoes.execute.Execute;
 import cn.zflzqy.mysqldatatoes.execute.SyncDatatExcute;
-import cn.zflzqy.mysqldatatoes.handler.HandlerService;
-import cn.zflzqy.mysqldatatoes.handler.TransDateHandler;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.CheckApp;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.JedisPoolUtil;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
-import io.debezium.engine.ChangeEvent;
-import io.debezium.engine.DebeziumEngine;
-import io.debezium.engine.format.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +22,9 @@ import redis.clients.jedis.JedisPool;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
@@ -82,7 +72,12 @@ public class MysqlDataToEsConfig {
         String springName = environment.getProperty("spring.application.name");
 
         // 每间隔30s检测当前应用是否存活，且标志位为当前应用，
-        checkAppPoolExecutor = ThreadPoolFactory.build("mysql-data-to-es-check");
+        checkAppPoolExecutor = new ThreadPoolFactory.ThreadPoolFactoryBuilderImpl()
+                        .corePoolSize(1)
+                        .maximumPoolSize(1)
+                        .keepAliveTime(30L)
+                        .prefix("mysql-data-to-es-check")
+                        .build();
         checkAppPoolExecutor.execute(new CheckApp(springName,environment.getProperty("server.port"),jedisPool,elasticsearchRestTemplate,props));
 
     }

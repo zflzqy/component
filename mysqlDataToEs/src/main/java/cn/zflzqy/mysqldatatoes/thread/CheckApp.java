@@ -95,7 +95,12 @@ public class CheckApp implements Runnable {
                                 .notifying(new CustomConsumer(indexs, execute, elasticsearchRestTemplate))
                                 .build();
                         // 构建线程池
-                        poolExecutor = ThreadPoolFactory.build("mysql-data-to-es");
+                        poolExecutor = new ThreadPoolFactory.ThreadPoolFactoryBuilderImpl()
+                                .corePoolSize(1)
+                                .maximumPoolSize(1)
+                                .keepAliveTime(30L)
+                                .prefix("mysql-data-to-es")
+                                .build();
                         // 提交任务
                         poolExecutor.execute(engine);
                         initial = true;

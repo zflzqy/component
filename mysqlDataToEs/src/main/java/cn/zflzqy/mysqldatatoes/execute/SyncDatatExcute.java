@@ -4,8 +4,9 @@ import cn.zflzqy.mysqldatatoes.config.CustomConsumer;
 import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.event.entity.SyncDatatExcuteEvent;
-import cn.zflzqy.mysqldatatoes.handler.HandlerService;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
+import cn.zflzqy.mysqldatatoes.thread.SyncThread;
+import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.JedisPoolUtil;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
@@ -24,6 +25,8 @@ import redis.clients.jedis.JedisPool;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class SyncDatatExcute {
 
@@ -52,12 +55,12 @@ public class SyncDatatExcute {
      * 支持表级过滤
      */
     @Async
-    public void  process(){
+    public void process() throws InterruptedException {
         process(null);
     }
 
     @Async
-    public void process(Set<String> tables) {
+    public void process(Set<String> tables) throws InterruptedException {
         JedisPool jedisPool = JedisPoolUtil.getInstance();
 
         // 创建数据库连接池
@@ -71,10 +74,10 @@ public class SyncDatatExcute {
         // 查询所有的表数据
         Map<String, Class> indexs = PackageScan.getIndexs();
         if (CollectionUtils.isEmpty(tables)) {
-           tables = indexs.keySet();
-        }else {
-            for (String table:tables){
-                if (!indexs.containsKey(table)){
+            tables = indexs.keySet();
+        } else {
+            for (String table : tables) {
+                if (!indexs.containsKey(table)) {
                     tables.remove(table);
                 }
             }
@@ -84,28 +87,34 @@ public class SyncDatatExcute {
         // mysql连接信息
         JdbcUrlParser.JdbcConnectionInfo jdbcConnectionInfo = JdbcUrlParser.parseJdbcUrl(properties.getMysqlUrl());
         // rediskey
-        String redisKey = SYNC_DATA_HANDLER+"::"+jdbcConnectionInfo.getHost()
-                +"::"+jdbcConnectionInfo.getPort()
-                +"::"+jdbcConnectionInfo.getDatabase()
-                +"::"+properties.getMysqlUsername();
+        String redisKey = SYNC_DATA_HANDLER + "::" + jdbcConnectionInfo.getHost()
+                + "::" + jdbcConnectionInfo.getPort()
+                + "::" + jdbcConnectionInfo.getDatabase()
+                + "::" + properties.getMysqlUsername();
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolFactory.ThreadPoolFactoryBuilderImpl()
+                .corePoolSize(5)
+                .maximumPoolSize(5)
+                .keepAliveTime(30L)
+                .prefix("mysql-data-to-es-check")
+                .build();
 
         // 批次查询上限
         int batchSize = 5000;
         for (String table : tables) {
             JSONObject tableExecute = new JSONObject();
             offset.add(tableExecute);
-            int total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM "+table, Integer.class);
+            int total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + table, Integer.class);
             // 先删除索引，主要是为了防止部分数据残留
             elasticsearchRestTemplate.indexOps(indexs.get(table)).delete();
             // 创建索引
             elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
-            tableExecute.put("table",table);
-            tableExecute.put("count",total);
-            tableExecute.put("batchSize",batchSize);
+            tableExecute.put("table", table);
+            tableExecute.put("count", total);
+            tableExecute.put("batchSize", batchSize);
 
             // 添加偏移
-            addOffset(jedisPool,offset,redisKey);
-            if (total<=0){
+            addOffset(jedisPool, offset, redisKey);
+            if (total <= 0) {
                 // 继续下个表
                 continue;
             }
@@ -113,37 +122,43 @@ public class SyncDatatExcute {
             // 然后，我们使用一个循环来按批次查询
             for (int i = 0; i < total; i += batchSize) {
                 // 我们使用LIMIT和OFFSET关键字来按批次查询
-                List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM "+table+" LIMIT ? OFFSET ?", batchSize, i);
-
-                // 将数据写入到es中
-                JSONArray datas = new JSONArray();
-                for (Map<String, Object> entry : result){
-                    JSONObject jsonObject = new JSONObject(entry);
-                    execute.execute(jsonObject,indexs.get(table));
-                    datas.add(jsonObject);
+                List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM " + table + " LIMIT ? OFFSET ?", batchSize, i);
+                if (CollectionUtils.isEmpty(result)) {
+                    continue;
                 }
-                CustomConsumer.addEsData(elasticsearchRestTemplate, indexs,datas, table, OpEnum.r);
 
+                // 将数据异步出去
+                int pageSize = 100;
+                int page = (int) Math.ceil(result.size() / pageSize);
+                CountDownLatch countDownLatch = new CountDownLatch(page);
+                for (int j=0;i<page;j++) {
+                    int end = j+1==page?result.size():(j + 1) * pageSize;
+                    List<Map<String, Object>> subList = result.subList(j * pageSize, end);
+                    threadPoolExecutor.submit(new SyncThread(subList, execute, indexs, table, elasticsearchRestTemplate));
+                }
+
+                // 阻塞等待线程池任务执行完
+                countDownLatch.await();
                 // 添加偏移
-                tableExecute.put("current",total);
-                addOffset(jedisPool,offset,redisKey);
-
+                tableExecute.put("current", total);
+                addOffset(jedisPool, offset, redisKey);
             }
-
         }
-
         dataSource = null;
+        // 线程池释放
+        threadPoolExecutor.shutdown();
     }
 
     /**
      * 添加偏移记录
+     *
      * @param offset：偏移数据
      */
-    private void addOffset(JedisPool jedisPool, JSONArray offset,String redisKey) {
+    private void addOffset(JedisPool jedisPool, JSONArray offset, String redisKey) {
         // 写入redis进度
         try (Jedis jedis = jedisPool.getResource()) {
             // 在这里使用jedis实例来操作Redis
-            jedis.setex(redisKey,REDIS_EXPIRE, offset.toString());
+            jedis.setex(redisKey, REDIS_EXPIRE, offset.toString());
         }
 
         // 发布事件
