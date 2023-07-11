@@ -129,12 +129,12 @@ public class SyncDatatExcute {
 
                 // 将数据异步出去
                 int pageSize = 100;
-                int page = (int) Math.ceil(result.size() / pageSize);
+                int page = (int) Math.ceil((double) result.size() / pageSize);
                 CountDownLatch countDownLatch = new CountDownLatch(page);
-                for (int j=0;i<page;j++) {
+                for (int j=0;j<page;j++) {
                     int end = j+1==page?result.size():(j + 1) * pageSize;
                     List<Map<String, Object>> subList = result.subList(j * pageSize, end);
-                    threadPoolExecutor.submit(new SyncThread(subList, execute, indexs, table, elasticsearchRestTemplate));
+                    threadPoolExecutor.submit(new SyncThread(subList, execute, indexs, table, elasticsearchRestTemplate,countDownLatch));
                 }
 
                 // 阻塞等待线程池任务执行完
