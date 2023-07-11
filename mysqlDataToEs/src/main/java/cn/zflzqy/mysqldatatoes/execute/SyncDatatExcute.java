@@ -72,6 +72,12 @@ public class SyncDatatExcute {
         Map<String, Class> indexs = PackageScan.getIndexs();
         if (CollectionUtils.isEmpty(tables)) {
            tables = indexs.keySet();
+        }else {
+            for (String table:tables){
+                if (!indexs.containsKey(table)){
+                    tables.remove(table);
+                }
+            }
         }
         JSONArray offset = new JSONArray();
 
