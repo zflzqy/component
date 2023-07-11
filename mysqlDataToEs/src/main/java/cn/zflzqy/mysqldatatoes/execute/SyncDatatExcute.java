@@ -17,6 +17,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.util.CollectionUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -47,8 +48,16 @@ public class SyncDatatExcute {
 
     }
 
+    /**
+     * 支持表级过滤
+     */
     @Async
-    public void process() {
+    public void  process(){
+        process(null);
+    }
+
+    @Async
+    public void process(Set<String> tables) {
         JedisPool jedisPool = JedisPoolUtil.getInstance();
 
         // 创建数据库连接池
@@ -61,7 +70,9 @@ public class SyncDatatExcute {
 
         // 查询所有的表数据
         Map<String, Class> indexs = PackageScan.getIndexs();
-        Set<String> tables = indexs.keySet();
+        if (CollectionUtils.isEmpty(tables)) {
+           tables = indexs.keySet();
+        }
         JSONArray offset = new JSONArray();
 
         // mysql连接信息
