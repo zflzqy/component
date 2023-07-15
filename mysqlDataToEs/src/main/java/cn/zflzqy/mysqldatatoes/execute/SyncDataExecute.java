@@ -1,8 +1,6 @@
 package cn.zflzqy.mysqldatatoes.execute;
 
-import cn.zflzqy.mysqldatatoes.config.CustomConsumer;
 import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
-import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.event.entity.SyncDatatExcuteEvent;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.SyncThread;
@@ -12,6 +10,8 @@ import cn.zflzqy.mysqldatatoes.util.JedisPoolUtil;
 import cn.zflzqy.mysqldatatoes.util.PackageScan;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
@@ -28,7 +28,11 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class SyncDatatExcute {
+/**
+ * @author zfl
+ */
+public class SyncDataExecute {
+    private static final Logger logger = LoggerFactory.getLogger(SyncDataExecute.class);
 
     // 执行的进度rediskey
     public static final String SYNC_DATA_HANDLER = "esToMysqlData::sync::data:handler";
@@ -46,7 +50,7 @@ public class SyncDatatExcute {
 
     private Execute execute;
 
-    public SyncDatatExcute() {
+    public SyncDataExecute() {
         execute = new Execute(HandlerEnum.FULL);
 
     }
@@ -61,6 +65,8 @@ public class SyncDatatExcute {
 
     @Async
     public void process(Set<String> tables) throws InterruptedException {
+        // 开始时间
+        long startTime = System.currentTimeMillis();
         JedisPool jedisPool = JedisPoolUtil.getInstance();
 
         // 创建数据库连接池
@@ -147,6 +153,10 @@ public class SyncDatatExcute {
         dataSource = null;
         // 线程池释放
         threadPoolExecutor.shutdown();
+        // 结束时间
+        long endTime = System.currentTimeMillis();
+        logger.info("全量同步任务"+tables.toString()+"耗时："+(endTime-startTime));
+
     }
 
     /**

@@ -1,6 +1,6 @@
 package cn.zflzqy.mysqldatatoes.config;
 
-import cn.zflzqy.mysqldatatoes.execute.SyncDatatExcute;
+import cn.zflzqy.mysqldatatoes.execute.SyncDataExecute;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
 import cn.zflzqy.mysqldatatoes.thread.CheckApp;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
@@ -48,8 +48,8 @@ public class MysqlDataToEsConfig {
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     @Bean
-    public SyncDatatExcute syncDatatExcute(){
-        return new SyncDatatExcute();
+    public SyncDataExecute SyncDataExecute(){
+        return new SyncDataExecute();
     }
 
 
