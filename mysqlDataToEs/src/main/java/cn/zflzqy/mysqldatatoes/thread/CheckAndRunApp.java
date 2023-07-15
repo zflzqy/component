@@ -26,8 +26,8 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @Date: 2023-07-02-9:41
  * @Description:
  */
-public class CheckApp implements Runnable {
-    private static final Logger log = LoggerFactory.getLogger(CheckApp.class);
+public class CheckAndRunApp implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(CheckAndRunApp.class);
     private static boolean initial = false;
     // 过期时间（秒）
     private static final int EXPIRE_TIME = 60;
@@ -58,7 +58,7 @@ public class CheckApp implements Runnable {
         this.appName = appName;
     }
 
-    public CheckApp(String appName, String port, JedisPool jedisPool, ElasticsearchRestTemplate elasticsearchRestTemplate, Properties properties) {
+    public CheckAndRunApp(String appName, String port, JedisPool jedisPool, ElasticsearchRestTemplate elasticsearchRestTemplate, Properties properties) {
         this.appName = appName;
         this.port = port;
         this.jedisPool = jedisPool;

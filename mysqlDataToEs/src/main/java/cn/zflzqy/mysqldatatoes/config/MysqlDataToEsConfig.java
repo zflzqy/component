@@ -2,7 +2,7 @@ package cn.zflzqy.mysqldatatoes.config;
 
 import cn.zflzqy.mysqldatatoes.execute.SyncDataExecute;
 import cn.zflzqy.mysqldatatoes.propertites.MysqlDataToEsPropertites;
-import cn.zflzqy.mysqldatatoes.thread.CheckApp;
+import cn.zflzqy.mysqldatatoes.thread.CheckAndRunApp;
 import cn.zflzqy.mysqldatatoes.thread.ThreadPoolFactory;
 import cn.zflzqy.mysqldatatoes.util.JdbcUrlParser;
 import cn.zflzqy.mysqldatatoes.util.JedisPoolUtil;
@@ -78,7 +78,7 @@ public class MysqlDataToEsConfig {
                         .keepAliveTime(30L)
                         .prefix("mysql-data-to-es-check")
                         .build();
-        checkAppPoolExecutor.execute(new CheckApp(springName,environment.getProperty("server.port"),jedisPool,elasticsearchRestTemplate,props));
+        checkAppPoolExecutor.execute(new CheckAndRunApp(springName,environment.getProperty("server.port"),jedisPool,elasticsearchRestTemplate,props));
 
     }
 
