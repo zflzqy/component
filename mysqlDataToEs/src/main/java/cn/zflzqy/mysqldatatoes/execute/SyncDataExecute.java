@@ -97,11 +97,14 @@ public class SyncDataExecute {
                 + "::" + jdbcConnectionInfo.getPort()
                 + "::" + jdbcConnectionInfo.getDatabase()
                 + "::" + properties.getMysqlUsername();
+
+        // cpu核心数据
+        int cpuCoreNum = Runtime.getRuntime().availableProcessors();
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolFactory.ThreadPoolFactoryBuilderImpl()
-                .corePoolSize(5)
-                .maximumPoolSize(5)
+                .corePoolSize(8)
+                .maximumPoolSize(2*cpuCoreNum+1)
                 .keepAliveTime(30L)
-                .prefix("mysql-data-to-es-check")
+                .prefix("mysql-data-to-es-all")
                 .build();
 
         // 批次查询上限

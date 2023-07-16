@@ -6,6 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author ：zfl
@@ -48,14 +49,11 @@ public class ThreadPoolFactory {
         }
 
         public ThreadPoolExecutor build() {
-            // cpu核心数据
-            ThreadFactory threadFactory = new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread thread = new Thread(r);
-                    thread.setName(prefix + "-" + 1);
-                    return thread;
-                }
+            final AtomicLong count = (null == prefix) ? null : new AtomicLong();
+            ThreadFactory threadFactory = r -> {
+                Thread thread = new Thread(r);
+                thread.setName(prefix +"-"+ count.getAndIncrement());
+                return thread;
             };
             ThreadPoolExecutor threadPoolExecutor =
                     new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), threadFactory);
