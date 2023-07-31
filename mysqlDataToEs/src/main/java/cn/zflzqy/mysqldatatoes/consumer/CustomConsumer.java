@@ -153,7 +153,7 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
                     data.get(i).put("requestUrl",buildRequestUrl(requestUrl,data.get(i)));
                     IndexQuery indexQuery = new IndexQuery();
                     indexQuery.setId(data.get(i).getString(idPropertyName));
-                    indexQuery.setSource(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat));
+                    indexQuery.setSource(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat,SerializerFeature.WriteMapNullValue));
                     indexQueries.add(indexQuery);
                 }
                 elasticsearchRestTemplate.bulkIndex(indexQueries,indexCoordinates);
@@ -164,7 +164,7 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
                     data.get(i).put("requestUrl",buildRequestUrl(requestUrl,data.get(i)));
                     UpdateQuery updateQuery = UpdateQuery.builder(data.get(i).getString(idPropertyName))
                             .withDocAsUpsert(true)
-                            .withDocument(Document.parse(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat)))
+                            .withDocument(Document.parse(data.get(i).toString(SerializerFeature.WriteDateUseDateFormat,SerializerFeature.WriteMapNullValue)))
                             .build();
                     updateQueries.add(updateQuery);
                 }
