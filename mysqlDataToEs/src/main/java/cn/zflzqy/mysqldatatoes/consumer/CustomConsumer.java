@@ -1,4 +1,4 @@
-package cn.zflzqy.mysqldatatoes.config;
+package cn.zflzqy.mysqldatatoes.consumer;
 
 import cn.zflzqy.mysqldatatoes.annotation.RequestUrl;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;

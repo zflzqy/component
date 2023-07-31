@@ -61,11 +61,10 @@ public class ElasticsearchQuery {
                     HighlightField value = next.getValue();
                     String rs = value.getFragments()[0].toString();
                     sourceAsMap.put(key,rs);
-
                 }
                 results.add(sourceAsMap);
             }
-            System.out.println("jieg "+JSONObject.toJSONString(results));
+            System.out.println("结果 "+JSONObject.toJSONString(results));
 
         } catch (IOException e) {
             e.printStackTrace();

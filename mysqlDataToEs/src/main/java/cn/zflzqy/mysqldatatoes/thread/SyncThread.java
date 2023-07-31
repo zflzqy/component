@@ -1,6 +1,6 @@
 package cn.zflzqy.mysqldatatoes.thread;
 
-import cn.zflzqy.mysqldatatoes.config.CustomConsumer;
+import cn.zflzqy.mysqldatatoes.consumer.CustomConsumer;
 import cn.zflzqy.mysqldatatoes.enums.OpEnum;
 import cn.zflzqy.mysqldatatoes.execute.Execute;
 import com.alibaba.fastjson.JSONArray;
