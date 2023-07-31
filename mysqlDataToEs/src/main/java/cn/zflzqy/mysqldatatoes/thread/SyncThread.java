@@ -21,17 +21,17 @@ import java.util.concurrent.CountDownLatch;
 
 public class SyncThread implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(SyncThread.class);
-    private List<Map<String,Object>> result;
-    private Execute execute;
-    private Map<String,Class> indexs;
-    private String table;
-    private ElasticsearchRestTemplate elasticsearchRestTemplate;
-    private CountDownLatch countDownLatch;
+    private final List<Map<String,Object>> result;
+    private final Execute execute;
+    private final Map<String,Class> indexes;
+    private final String table;
+    private final ElasticsearchRestTemplate elasticsearchRestTemplate;
+    private final CountDownLatch countDownLatch;
 
     public SyncThread(List<Map<String, Object>> result, Execute execute, Map<String, Class> indexs, String table, ElasticsearchRestTemplate elasticsearchRestTemplate,CountDownLatch countDownLatch) {
         this.result = result;
         this.execute = execute;
-        this.indexs = indexs;
+        this.indexes = indexs;
         this.table = table;
         this.elasticsearchRestTemplate = elasticsearchRestTemplate;
         this.countDownLatch = countDownLatch;
@@ -42,13 +42,13 @@ public class SyncThread implements Runnable {
         // 将数据写入到es
         try {
 
-            JSONArray datas = new JSONArray();
+            JSONArray data = new JSONArray();
             for (Map<String, Object> entry : result) {
                 JSONObject jsonObject = new JSONObject(entry);
-                execute.execute(jsonObject, indexs.get(table));
-                datas.add(jsonObject);
+                execute.execute(jsonObject, indexes.get(table));
+                data.add(jsonObject);
             }
-            CustomConsumer.addEsData(elasticsearchRestTemplate, indexs, datas, table, OpEnum.r);
+            CustomConsumer.addEsData(elasticsearchRestTemplate, indexes, data, table, OpEnum.r);
         }catch (Exception e) {
             throw e;
         }finally {

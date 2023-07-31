@@ -25,10 +25,10 @@ import java.util.jar.JarFile;
 public class PackageScan {
     private static final Logger log = LoggerFactory.getLogger(PackageScan.class);
     // 索引数据
-    private static final Map<String,Class> INDEXS = new HashMap();
+    private static final Map<String,Class> INDEXES = new HashMap();
 
-    public static Map<String, Class> getIndexs() {
-        return INDEXS;
+    public static Map<String, Class> getIndexes() {
+        return INDEXES;
     }
 
     /**
@@ -46,12 +46,15 @@ public class PackageScan {
         } catch (IOException e) {
             log.error("IO 异常：", e);
         }
+        if (resources == null) {
+            return;
+        }
         while (resources.hasMoreElements()) {
             URL resource = resources.nextElement();
             scanEntitiesInDirectory(packageName, resource);
         }
 
-        log.info("扫描的索引信息：{}",INDEXS.toString());
+        log.info("扫描的索引信息：{}", INDEXES.toString());
     }
 
 
@@ -78,7 +81,7 @@ public class PackageScan {
                             try {
                                 Class<?> clazz = Class.forName(className);
                                 if (isEntityClass(clazz)) {
-                                    INDEXS.put(getIndexName(clazz),clazz);
+                                    INDEXES.put(getIndexName(clazz),clazz);
                                 }
                             } catch (ClassNotFoundException e) {
                                 log.error("类未找到异常", e);
@@ -109,7 +112,7 @@ public class PackageScan {
                     try {
                         Class<?> clazz = Class.forName(className);
                         if (isEntityClass(clazz)) {
-                            INDEXS.put(getIndexName(clazz),clazz);
+                            INDEXES.put(getIndexName(clazz),clazz);
                         }
                     } catch (ClassNotFoundException e) {
                         log.error("类未找到异常", e);
@@ -129,7 +132,7 @@ public class PackageScan {
         boolean annotationPresent = clazz.isAnnotationPresent(Document.class);
 
         if (annotationPresent){
-            Class aClass = INDEXS.get(getIndexName(clazz));
+            Class aClass = INDEXES.get(getIndexName(clazz));
             if (aClass == null){
                 return  true;
             }
@@ -149,7 +152,7 @@ public class PackageScan {
      */
     private static String getIndexName(Class<?> clazz) {
         Annotation annotation = clazz.getAnnotation(Document.class);
-        if (annotation instanceof Document) {
+        if (annotation != null) {
             return ((Document) annotation).indexName();
         }
         return null;

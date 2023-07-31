@@ -5,7 +5,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 public class JedisPoolUtil {
-    private static JedisPool instance;
+    private static volatile JedisPool instance;
 
     private JedisPoolUtil() {}
 

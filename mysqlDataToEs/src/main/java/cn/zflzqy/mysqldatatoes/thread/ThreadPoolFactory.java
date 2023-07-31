@@ -52,7 +52,11 @@ public class ThreadPoolFactory {
             final AtomicLong count = (null == prefix) ? null : new AtomicLong();
             ThreadFactory threadFactory = r -> {
                 Thread thread = new Thread(r);
-                thread.setName(prefix +"-"+ count.getAndIncrement());
+                if (count!=null) {
+                    thread.setName(prefix + "-" + count.getAndIncrement());
+                }else {
+                    thread.setName(prefix);
+                }
                 return thread;
             };
             ThreadPoolExecutor threadPoolExecutor =

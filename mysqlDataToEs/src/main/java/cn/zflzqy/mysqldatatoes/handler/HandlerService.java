@@ -12,7 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 public interface HandlerService {
     public static void register(HandlerEnum handlerEnum,HandlerService handlerService){
         if (handlerEnum== HandlerEnum.INCREMENTAL) {
-            Execute.getExcueteHandlerServices().add(handlerService);
+            Execute.getExecuteHandlerServices().add(handlerService);
         }else if (handlerEnum== HandlerEnum.FULL){
             Execute.getFullHandlerServices().add(handlerService);
         }

@@ -74,7 +74,7 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
             execute.execute(jsonObject, indexs.get(table));
 
             // 获取操作类型
-            OpEnum opEnum = null;
+            OpEnum opEnum;
             try {
                 opEnum = OpEnum.valueOf(payload.getString("op"));
             } catch (Exception e) {
@@ -103,15 +103,15 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
      * @description 添加数据到es
      * @param elasticsearchRestTemplate
      * @param indexs
-     * @param data
+     * @param item
      * @param table
      * @param opEnum
      */
     public static void addEsData(ElasticsearchRestTemplate elasticsearchRestTemplate,
-                                 Map<String, Class> indexs, JSONObject data, String table, OpEnum opEnum) {
-        List<JSONObject> datas = new ArrayList<JSONObject>();
-        datas.add(data);
-        addEsData(elasticsearchRestTemplate, indexs,datas,table,opEnum);
+                                 Map<String, Class> indexs, JSONObject item, String table, OpEnum opEnum) {
+        List<JSONObject> data = new ArrayList<>();
+        data .add(item);
+        addEsData(elasticsearchRestTemplate, indexs,data ,table,opEnum);
 
     }
 
@@ -148,7 +148,7 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
         switch (opEnum) {
             case r:
             case c:
-                List<IndexQuery> indexQueries = new ArrayList<IndexQuery>();
+                List<IndexQuery> indexQueries = new ArrayList<>();
                 for (int i = 0; i <data.size(); i++) {
                     data.get(i).put("requestUrl",buildRequestUrl(requestUrl,data.get(i)));
                     IndexQuery indexQuery = new IndexQuery();
@@ -192,7 +192,7 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
         String pattern = "\\{(.*?)\\}".intern();
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(content);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (m.find())
         {
             String key = m.group(1);

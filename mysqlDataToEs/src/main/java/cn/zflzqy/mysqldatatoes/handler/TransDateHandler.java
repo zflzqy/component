@@ -66,20 +66,20 @@ public class TransDateHandler implements HandlerService {
                     continue;
                 }
 
-                if (name.equals("io.debezium.time.Date")){
+                if ("io.debezium.time.Date".equals(name)){
                     LocalDate epoch = LocalDate.of(1970, 1, 1);
                     LocalDate today = epoch.plusDays(data.getInteger(field));
                     // 将 LocalDate 转换为 Date
                     Date date = java.sql.Date.valueOf(today);
                     data.put(field, date);
-                }else if (name.equals("io.debezium.time.MicroTime")){
+                }else if ("io.debezium.time.MicroTime".equals(name)){
                     Date date = new Date(data.getLong(field)/1000);
                     data.put(field, date);
-                }else if (name.equals("io.debezium.time.Timestamp")){
+                }else if ("io.debezium.time.Timestamp".equals(name)){
                     Date date = new Date(data.getLong(field));
                     data.put(field, date);
 
-                }else if (name.equals("io.debezium.time.MicroTimestamp")) {
+                }else if ("io.debezium.time.MicroTimestamp".equals(name)) {
                     Date date = new Date(data.getLong(field)/1000);
                     data.put(field, date);
                 }

@@ -48,7 +48,7 @@ public class SyncDataExecute {
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-    private Execute execute;
+    private final Execute execute;
 
     public SyncDataExecute() {
         execute = new Execute(HandlerEnum.FULL);
@@ -78,7 +78,7 @@ public class SyncDataExecute {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
         // 查询所有的表数据
-        Map<String, Class> indexs = PackageScan.getIndexs();
+        Map<String, Class> indexs = PackageScan.getIndexes();
         if (CollectionUtils.isEmpty(tables)) {
             tables = indexs.keySet();
         } else {

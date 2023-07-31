@@ -3,6 +3,7 @@ package cn.zflzqy.mysqldatatoes.execute;
 import cn.zflzqy.mysqldatatoes.enums.HandlerEnum;
 import cn.zflzqy.mysqldatatoes.handler.HandlerService;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.util.CollectionUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public class Execute {
     // 增量处理器
-    private static LinkedList<HandlerService> excueteHandlerServices = new LinkedList<>();
+    private static LinkedList<HandlerService> executeHandlerServices = new LinkedList<>();
     // 全量处理器
     private static LinkedList<HandlerService> fullHandlerServices = new LinkedList<>();
     private HandlerEnum handlerEnum;
@@ -30,21 +31,24 @@ public class Execute {
     public void execute(JSONObject jsonObject,Class asClass){
         List<HandlerService> handlerServices = null;
         if (handlerEnum==HandlerEnum.INCREMENTAL){
-            handlerServices = excueteHandlerServices;
+            handlerServices = executeHandlerServices;
         }else if (handlerEnum==HandlerEnum.FULL){
             handlerServices = fullHandlerServices;
+        }
+        if (CollectionUtils.isEmpty(handlerServices)){
+            return;
         }
         for (HandlerService handlerService : handlerServices){
             handlerService.execute(jsonObject,asClass);
         }
     }
 
-    public static LinkedList<HandlerService> getExcueteHandlerServices() {
-        return excueteHandlerServices;
+    public static LinkedList<HandlerService> getExecuteHandlerServices() {
+        return executeHandlerServices;
     }
 
     public static void setHandlerServices(LinkedList<HandlerService> handlerServices) {
-        Execute.excueteHandlerServices = handlerServices;
+        Execute.executeHandlerServices = handlerServices;
     }
 
     public static LinkedList<HandlerService> getFullHandlerServices() {

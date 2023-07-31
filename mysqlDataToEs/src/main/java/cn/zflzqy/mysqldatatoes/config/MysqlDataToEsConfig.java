@@ -63,10 +63,10 @@ public class MysqlDataToEsConfig {
         PackageScan.scanEntities(StringUtils.hasText(mysqlDataToEsPropertites.getBasePackage())?
                 mysqlDataToEsPropertites.getBasePackage():
                 PackagePathResolver.mainClassPackagePath);
-        Map<String, Class> indexs = PackageScan.getIndexs();
+        Map<String, Class> indexes = PackageScan.getIndexes();
 
         // 构建执行参数
-        Properties props = buildPropertites(indexs,jedisPool);
+        Properties props = buildPropertites(indexes,jedisPool);
 
         // 获取应用名称，标识集群下的唯一性
         String springName = environment.getProperty("spring.application.name");
@@ -144,7 +144,7 @@ public class MysqlDataToEsConfig {
             props.setProperty("table.include.list", mysqlDataToEsPropertites.getIncludeTables());
         }else {
             Set<String> tables = indexs.keySet();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (String table : tables) {
                 sb.append(jdbcConnectionInfo.getDatabase()).append(".").append(table).append(",");
             }

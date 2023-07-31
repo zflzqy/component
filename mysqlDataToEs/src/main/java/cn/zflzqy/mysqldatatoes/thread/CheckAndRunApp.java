@@ -33,14 +33,14 @@ public class CheckAndRunApp implements Runnable {
     private static final int EXPIRE_TIME = 60;
     // 当前应用的IP和端口
     private static String IP_PORT = null;
-    public static boolean getLock = false;
+
     private String appName;
     private String port;
-    private JedisPool jedisPool;
-    private Execute execute;
+    private final JedisPool jedisPool;
+    private final Execute execute;
 
-    private ElasticsearchRestTemplate elasticsearchRestTemplate;
-    private Properties props;
+    private final ElasticsearchRestTemplate elasticsearchRestTemplate;
+    private final Properties props;
 
     public String getPort() {
         return port;
@@ -87,12 +87,12 @@ public class CheckAndRunApp implements Runnable {
 
                 if (jedis.setnx(key, IP_PORT) == 1) {
                     // 成功获取到锁,创建engine
-                    Map<String, Class> indexs = PackageScan.getIndexs();
+                    Map<String, Class> indexes = PackageScan.getIndexes();
                     try {
                         log.info("{}获取到了执行器",IP_PORT);
                         engine = DebeziumEngine.create(Json.class)
                                 .using(props)
-                                .notifying(new CustomConsumer(indexs, execute, elasticsearchRestTemplate))
+                                .notifying(new CustomConsumer(indexes, execute, elasticsearchRestTemplate))
                                 .build();
                         // 构建线程池
                         poolExecutor = new ThreadPoolFactory.ThreadPoolFactoryBuilderImpl()
