@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -96,9 +97,6 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
         }
     }
 
-
-
-
     /**
      * @description 添加数据到es
      * @param elasticsearchRestTemplate
@@ -128,6 +126,24 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
         Class aClass = indexs.get(table);
         // 构建es索引
         IndexCoordinates indexCoordinates = elasticsearchRestTemplate.getIndexCoordinatesFor(aClass);
+        for (int i = 0; i < data.size(); i++){
+            JSONObject item = data.get(i);
+            Object object = item.toJavaObject(aClass);
+            JSONObject newData = new JSONObject();
+            // 根据驼峰进行转换
+            newData.putAll(JSONObject.parseObject(JSONObject.toJSONString(object,SerializerFeature.WriteDateUseDateFormat,SerializerFeature.WriteMapNullValue)));
+            // 写入其他数据
+            Iterator<Map.Entry<String, Object>> iterator = item.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> next = iterator.next();
+                if (!newData.containsKey(next.getKey()) &&
+                        !newData.containsKey(toCamelCase(next.getKey()))) {
+                    newData.put(next.getKey(), next.getValue());
+                }
+            }
+            // 替换原列表中的对象
+            data.set(i, newData);
+        }
         // 获取id字段
         String idPropertyName = null;
         Field[] fields = aClass.getDeclaredFields();
@@ -201,5 +217,39 @@ public class CustomConsumer implements Consumer<ChangeEvent<String, String>> {
         }
         m.appendTail(sb);
         return  sb.toString();
+    }
+
+
+    /**
+     * 下划线转驼峰
+     * @param name
+     * @return
+     */
+    public static String toCamelCase(CharSequence name) {
+        if (null == name) {
+            return null;
+        } else {
+            String name2 = name.toString();
+            if (name2.contains("_")) {
+                StringBuilder sb = new StringBuilder(name2.length());
+                boolean upperCase = false;
+
+                for(int i = 0; i < name2.length(); ++i) {
+                    char c = name2.charAt(i);
+                    if (c == '_') {
+                        upperCase = true;
+                    } else if (upperCase) {
+                        sb.append(Character.toUpperCase(c));
+                        upperCase = false;
+                    } else {
+                        sb.append(Character.toLowerCase(c));
+                    }
+                }
+
+                return sb.toString();
+            } else {
+                return name2;
+            }
+        }
     }
 }

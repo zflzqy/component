@@ -116,7 +116,7 @@ public class SyncDataExecute {
             // 先删除索引，主要是为了防止部分数据残留
             elasticsearchRestTemplate.indexOps(indexs.get(table)).delete();
             // 创建索引
-            elasticsearchRestTemplate.indexOps(indexs.get(table)).create();
+            elasticsearchRestTemplate.indexOps(indexs.get(table)).createWithMapping();
             tableExecute.put("table", table);
             tableExecute.put("count", total);
             tableExecute.put("batchSize", batchSize);
