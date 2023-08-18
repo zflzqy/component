@@ -17,7 +17,7 @@ connection = pymysql.connect(host='172.168.10.3',
 try:
     with connection.cursor() as cursor:
         # Replace with your SQL query
-        sql = "SELECT * FROM t_production_schedule"
+        sql = "SELECT	tenant_id,create_by,create_time,`no`,	input,usage_and_dosage,production_operation,operation_description,job_start_time,job_duration,job_introduce,random_job,job_by,`status`,	grow_plan_id FROM	t_production_schedule ORDER BY	create_time DESC "
         cursor.execute(sql)
         results = cursor.fetchall()
         
@@ -48,8 +48,10 @@ performance = model.model_performance(test_data=test)
 print(performance)
 
 # 保存模型到文件
-model_path = h2o.save_model(model=model, path="/opt/machine/model", force=True)
+# 保存模型到指定文件名
+model_path = "/opt/machine/model/"
+h2o.save_model(model=model, path=model_path, force=True)
 print(model_path)
-pojo_path = model.download_pojo(path="/opt/machine/modelpo", get_genmodel_jar=True)
-print(pojo_path)
+#pojo_path = model.download_pojo(path="/opt/machine/modelpo", get_genmodel_jar=True)
+#print(pojo_path)
 
